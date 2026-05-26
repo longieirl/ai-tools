@@ -23,3 +23,13 @@ notes/          Research notes, evaluations, comparisons
 | File | Description |
 |------|-------------|
 | [rtk-token-saving.md](notes/rtk-token-saving.md) | RTK (Rust Token Killer) — CLI proxy that cuts shell-command tokens 60–90% before they hit LLM context |
+
+## Contributing
+
+After cloning, activate the shared git hooks:
+
+```bash
+git config core.hooksPath .github/hooks
+```
+
+This enforces local protection on `main` (no direct commits or pushes).
