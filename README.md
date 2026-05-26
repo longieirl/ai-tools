@@ -11,3 +11,15 @@ configs/        Config files for AI tools (Claude, Cursor, etc.)
 workflows/      Multi-step AI workflow definitions
 notes/          Research notes, evaluations, comparisons
 ```
+
+## Prompts
+
+| File | Description |
+|------|-------------|
+| [setup-dead-weight-audit.md](prompts/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference on typical tasks |
+
+## Notes
+
+| File | Description |
+|------|-------------|
+| [rtk-token-saving.md](notes/rtk-token-saving.md) | RTK (Rust Token Killer) — CLI proxy that cuts shell-command tokens 60–90% before they hit LLM context |
