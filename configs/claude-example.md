@@ -72,6 +72,8 @@ Types: `feat` | `fix` | `perf` | `chore` | `docs` | `refactor` | `test`
 
 Branch naming: `type/short-description` (e.g. `fix/mobile-nav`, `feat/contact-form`)
 
+If working on a GitHub issue, include the issue ID: `type/123-short-description` (e.g. `fix/42-mobile-nav`, `feat/17-contact-form`)
+
 PRs require:
 - 1 approving review
 - Security scan pass (no secrets, no flagged vulnerabilities)
