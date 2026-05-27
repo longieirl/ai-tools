@@ -206,3 +206,7 @@ Expected output:
 ## Security Note
 
 `gh api` commands modify repo settings using the caller's auth token. Only users with **admin** access to the repo can apply these settings. Public visibility does not grant write or admin access — unauthenticated users get 403 on all PATCH/POST API calls.
+
+## See Also
+
+- [`notes/github-repo-standards.md`](../notes/github-repo-standards.md) — non-negotiable standards every repo must meet (PR auto-assign, branch auto-delete, lean workflow output)
