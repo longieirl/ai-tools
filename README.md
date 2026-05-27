@@ -17,6 +17,7 @@ notes/          Research notes, evaluations, comparisons
 | File | Description |
 |------|-------------|
 | [setup-dead-weight-audit.md](prompts/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference on typical tasks |
+| [github-repo-lockdown.md](prompts/github-repo-lockdown.md) | Lock down a public personal GitHub repo — rulesets, CODEOWNERS, local hooks, auto-delete branches |
 
 ## Notes
 
