@@ -7,10 +7,16 @@ Personal collection of AI tools, prompts, configs, and workflows.
 ```
 prompts/        System prompts, reusable prompt templates
 tools/          Scripts, wrappers, CLI tools
-configs/        Config files for AI tools (Claude, Cursor, etc.)
+configs/        Config files and templates for AI tools (Claude, Cursor, etc.)
 workflows/      Multi-step AI workflow definitions
 notes/          Research notes, evaluations, comparisons
 ```
+
+## Configs
+
+| File | Description |
+|------|-------------|
+| [claude-example.md](configs/claude-example.md) | Base CLAUDE.md template — copy into any project and extend the Project-Specific section |
 
 ## Prompts
 
