@@ -85,6 +85,34 @@ Auto-delete merged branches to keep the repo clean:
 gh api repos/REPO --method PATCH --field delete_branch_on_merge=true
 ```
 
+## Step 4: Auto-Assign PR Creator
+
+GitHub has no native setting for this — requires a Actions workflow. Create `.github/workflows/auto-assign.yml`:
+
+```yaml
+name: Auto-assign PR creator
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: [context.actor]
+            })
+```
+
+No permissions block needed — `GITHUB_TOKEN` has write access to issues/PRs by default on public repos.
+
 ## Step 4: Local Git Hooks
 
 Create hooks in `.github/hooks/` so they are committed and shared with the repo.
@@ -147,6 +175,9 @@ gh api repos/REPO/rulesets --jq '.[].name'
 # Auto-delete enabled
 gh api repos/REPO --jq '.delete_branch_on_merge'
 
+# Auto-assign workflow exists
+ls .github/workflows/auto-assign.yml
+
 # Hooks wired
 git config core.hooksPath
 
@@ -157,6 +188,7 @@ cat .github/CODEOWNERS
 Expected output:
 - Ruleset name printed
 - `true`
+- File exists
 - `.github/hooks`
 - `* @OWNER`
 
@@ -169,6 +201,7 @@ Expected output:
 | Hooks in `.github/hooks/` not `.git/hooks/` | `.git/` is not committed. `.github/hooks/` is tracked and shared |
 | `--no-verify` on bootstrap commit only | Hooks block themselves on first push — unavoidable one-time exception |
 | `enforce_admins: true` not used | Replaced by ruleset. Legacy `enforce_admins: true` blocked even the owner with no bypass path |
+| Auto-assign PR creator via Actions | GitHub has no native setting — Actions workflow needed. `GITHUB_TOKEN` covers it on public repos without extra permissions |
 
 ## Security Note
 
