@@ -48,6 +48,7 @@ notes/          Research notes, evaluations, comparisons
 | File | Description |
 |------|-------------|
 | [rtk-token-saving.md](notes/rtk-token-saving.md) | RTK (Rust Token Killer) — CLI proxy that cuts shell-command tokens 60–90% before they hit LLM context |
+| [github-repo-standards.md](notes/github-repo-standards.md) | Non-negotiable GitHub repo standards — PR auto-assign, branch auto-delete, lean workflow output |
 | [gsd](notes/tools/gsd.md) | Get Shit Done Redux — spec-driven dev system that solves context rot with parallel subagent execution |
 | [playwright](notes/tools/playwright.md) | Browser automation — E2E tests, accessibility, cross-browser, responsive, screenshots |
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
