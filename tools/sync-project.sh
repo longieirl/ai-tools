@@ -64,7 +64,30 @@ else
   echo "Prepended import to CLAUDE.md"
 fi
 
-# 4. Commit if inside a git repo
+# 4. Install global Claude Code commands into ~/.claude/commands/
+COMMANDS_DIR="$HOME/.claude/commands"
+mkdir -p "$COMMANDS_DIR"
+for cmd in sync-ai-config update-global-config; do
+  curl -fsSL "$BASE/.claude/commands/${cmd}.md" -o "$COMMANDS_DIR/${cmd}.md"
+  echo "Installed /${cmd} → $COMMANDS_DIR/${cmd}.md"
+done
+
+# 5. Wire up ~/.claude/global-claude.md and add to ~/.claude/CLAUDE.md
+curl -fsSL "$BASE/.agent/global-claude.md" -o "$HOME/.claude/global-claude.md"
+echo "Updated ~/.claude/global-claude.md"
+
+GLOBAL_CLAUDE="$HOME/.claude/CLAUDE.md"
+if [ ! -f "$GLOBAL_CLAUDE" ]; then
+  printf '@global-claude.md\n' > "$GLOBAL_CLAUDE"
+  echo "Created $GLOBAL_CLAUDE with @global-claude.md"
+elif ! grep -q '@global-claude.md' "$GLOBAL_CLAUDE"; then
+  printf '\n@global-claude.md\n' >> "$GLOBAL_CLAUDE"
+  echo "Added @global-claude.md to $GLOBAL_CLAUDE"
+else
+  echo "$GLOBAL_CLAUDE already includes @global-claude.md"
+fi
+
+# 6. Commit if inside a git repo
 if git rev-parse --git-dir > /dev/null 2>&1; then
   git add .agent/global-claude.md AGENTS.md CLAUDE.md 2>/dev/null || true
   if git diff --cached --quiet; then
