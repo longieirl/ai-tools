@@ -12,11 +12,15 @@ workflows/      Multi-step AI workflow definitions
 notes/          Research notes, evaluations, comparisons
 ```
 
+## Key Files
+
+- [AGENTS.md](AGENTS.md) — Short AI agent entrypoint (required reading, key rules, upstream source link).
+
 ## Configs
 
 | File | Description |
 |------|-------------|
-| [global-claude.md](configs/global-claude.md) | Canonical behavioral guidelines — imported by all projects via `@~/.claude/global-claude.md` |
+| [global-claude.md](.agent/global-claude.md) | Canonical behavioral guidelines — imported by all projects via `@~/.claude/global-claude.md` |
 | [claude-example.md](configs/claude-example.md) | Base CLAUDE.md template — copy into any project and extend the Project-Specific section |
 
 ## Using Claude Guidelines in a Project
@@ -29,7 +33,7 @@ These guidelines are the single source of truth for Claude behavior across all p
 bash tools/setup-claude.sh
 ```
 
-Creates `~/.claude/global-claude.md` as a symlink to `configs/global-claude.md`. Any project referencing `@~/.claude/global-claude.md` will always use the latest version from this repo.
+Creates `~/.claude/global-claude.md` as a symlink to `.agent/global-claude.md`. Any project referencing `@~/.claude/global-claude.md` will always use the latest version from this repo.
 
 ### New project
 
@@ -51,7 +55,7 @@ Add this line at the top of the project's `CLAUDE.md`:
 
 ### Updating guidelines
 
-Edit `configs/global-claude.md` in this repo. All projects pick up the change automatically on next Claude session — no copying required.
+Edit `.agent/global-claude.md` in this repo. All projects pick up the change automatically on next Claude session — no copying required.
 
 ## Prompts
 

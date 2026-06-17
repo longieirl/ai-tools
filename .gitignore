@@ -2,4 +2,4 @@
 *.env
 *.env.local
 secrets/
-.claude/
+.claude/settings.local.json
