@@ -16,7 +16,42 @@ notes/          Research notes, evaluations, comparisons
 
 | File | Description |
 |------|-------------|
+| [global-claude.md](configs/global-claude.md) | Canonical behavioral guidelines — imported by all projects via `@~/.claude/global-claude.md` |
 | [claude-example.md](configs/claude-example.md) | Base CLAUDE.md template — copy into any project and extend the Project-Specific section |
+
+## Using Claude Guidelines in a Project
+
+These guidelines are the single source of truth for Claude behavior across all projects.
+
+### New machine setup (once)
+
+```bash
+bash tools/setup-claude.sh
+```
+
+Creates `~/.claude/global-claude.md` as a symlink to `configs/global-claude.md`. Any project referencing `@~/.claude/global-claude.md` will always use the latest version from this repo.
+
+### New project
+
+Copy the template and extend it:
+
+```bash
+cp /path/to/AITools/configs/claude-example.md ./CLAUDE.md
+```
+
+Then fill in the `## Project-Specific` section at the bottom.
+
+### Existing project
+
+Add this line at the top of the project's `CLAUDE.md`:
+
+```
+@~/.claude/global-claude.md
+```
+
+### Updating guidelines
+
+Edit `configs/global-claude.md` in this repo. All projects pick up the change automatically on next Claude session — no copying required.
 
 ## Prompts
 
@@ -62,10 +97,11 @@ notes/          Research notes, evaluations, comparisons
 
 ## Contributing
 
-After cloning, activate the shared git hooks:
+After cloning, run setup:
 
 ```bash
+bash tools/setup-claude.sh
 git config core.hooksPath .github/hooks
 ```
 
-This enforces local protection on `main` (no direct commits or pushes).
+`setup-claude.sh` symlinks the Claude guidelines into `~/.claude/`. `core.hooksPath` enforces local protection on `main` (no direct commits or pushes).
