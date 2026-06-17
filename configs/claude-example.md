@@ -2,69 +2,13 @@
 
 Base CLAUDE.md for any project. Copy it, rename to `CLAUDE.md`, extend the Project-Specific section at the bottom.
 
-Behavioral guidelines (sections 1–4) adapted from [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md). Project standards (sections 5–10) distilled from common patterns across projects.
+Behavioral guidelines are imported from AITools via `~/.claude/global-claude.md` (symlinked on first machine setup — see AITools `tools/setup-claude.sh`).
+
+@~/.claude/global-claude.md
 
 ---
 
-## 1. Think Before Coding
-
-Before implementing:
-- State assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
----
-
-## 2. Simplicity First
-
-Minimum code that solves the problem. Nothing speculative.
-
-- No features beyond what was asked
-- No abstractions for single-use code
-- No "flexibility" or "configurability" that wasn't requested
-- No error handling for impossible scenarios
-- If you write 200 lines and it could be 50, rewrite it
-
-Ask: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
----
-
-## 3. Surgical Changes
-
-Touch only what you must. Clean up only your own mess.
-
-When editing existing code:
-- Don't improve adjacent code, comments, or formatting
-- Don't refactor things that aren't broken
-- Match existing style, even if you'd do it differently
-- If you notice unrelated dead code, mention it — don't delete it
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused
-- Don't remove pre-existing dead code unless asked
-
-Every changed line should trace directly to the user's request.
-
----
-
-## 4. Goal-Driven Execution
-
-Define success criteria. Loop until verified.
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-```
-
----
-
-## 5. Git Conventions
+## 1. Git Conventions
 
 Commit format: `type: description`
 
@@ -83,7 +27,7 @@ Never push directly to `main`. Always work on a branch.
 
 ---
 
-## 6. Safety Rules
+## 2. Safety Rules
 
 - Flag security issues before any other recommendation
 - Never suggest inventing reviews, testimonials, or social proof
@@ -94,7 +38,7 @@ Never push directly to `main`. Always work on a branch.
 
 ---
 
-## 7. Accessibility
+## 3. Accessibility
 
 Target: WCAG 2.1 AA — zero violations acceptable.
 
@@ -106,7 +50,7 @@ Target: WCAG 2.1 AA — zero violations acceptable.
 
 ---
 
-## 8. Testing
+## 4. Testing
 
 Run before every push:
 
@@ -120,7 +64,7 @@ Run before every push:
 
 ---
 
-## 9. Mobile-First Design
+## 5. Mobile-First Design
 
 - Design and test mobile viewport first — desktop is the extension
 - Prefer simple layouts, fast pages, clear messaging
@@ -130,7 +74,7 @@ Run before every push:
 
 ---
 
-## 10. Output Format for Recommendations
+## 6. Output Format for Recommendations
 
 1. **Summary** — one sentence on the overall finding
 2. **Priority issues** — security, integrity, blockers first
@@ -143,7 +87,7 @@ Priority: security/integrity → blockers → mobile UX → core content → SEO
 
 ---
 
-## 11. Web Projects — Schema & SEO
+## 7. Web Projects — Schema & SEO
 
 Include this section for web/CMS projects. Remove for backend, CLI, or library projects.
 

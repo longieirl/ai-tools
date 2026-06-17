@@ -1,0 +1,55 @@
+# AI Tools
+
+Personal collection of AI tools, prompts, configs, and workflows for use with Claude and other LLMs. No framework, no build step — pure markdown and config files.
+
+## Purpose
+
+- `configs/` — Reusable Claude behavioral guidelines and CLAUDE.md templates
+- `prompts/` — System prompts and reusable prompt templates
+- `tools/` — Shell scripts and CLI wrappers
+- `notes/` — Research notes on skills, MCP servers, and tools
+- `workflows/` — Multi-step AI workflow definitions
+
+## Key Files
+
+- [configs/global-claude.md](configs/global-claude.md) — Canonical Claude behavioral guidelines (Think Before Coding, Surgical Changes, Goal-Driven Execution). Import into any project via `@~/.claude/global-claude.md`.
+- [configs/claude-example.md](configs/claude-example.md) — Base CLAUDE.md template. Copy into any project and extend the Project-Specific section.
+- [tools/setup-claude.sh](tools/setup-claude.sh) — One-time machine setup. Symlinks `global-claude.md` into `~/.claude/` so all projects stay in sync.
+- [AGENTS.md](AGENTS.md) — Project context for AI agents (structure, git conventions, setup).
+
+## Using Claude Guidelines
+
+To apply these guidelines to any project:
+
+1. Run `bash tools/setup-claude.sh` once per machine
+2. Add `@~/.claude/global-claude.md` to the top of the project's CLAUDE.md
+
+Updates to `configs/global-claude.md` propagate to all projects automatically on next Claude session.
+
+## Prompts
+
+- [prompts/github-repo-lockdown.md](prompts/github-repo-lockdown.md) — Lock down a public GitHub repo (rulesets, CODEOWNERS, hooks, branch protection)
+- [prompts/setup-dead-weight-audit.md](prompts/setup-dead-weight-audit.md) — Audit Claude setup files for dead-weight instructions
+
+## Notes: Skills
+
+- [notes/skills/impeccable.md](notes/skills/impeccable.md) — Production-grade frontend design
+- [notes/skills/taste-skill.md](notes/skills/taste-skill.md) — Metric-based UI/UX engineering
+- [notes/skills/update-config.md](notes/skills/update-config.md) — Configure Claude Code settings.json
+- [notes/skills/github-secure-repo.md](notes/skills/github-secure-repo.md) — GitHub repo security hardening
+- [notes/skills/semgrep.md](notes/skills/semgrep.md) — Semgrep static analysis for security
+
+## Notes: MCP Servers
+
+- [notes/mcp/context7.md](notes/mcp/context7.md) — Live library documentation
+- [notes/mcp/github.md](notes/mcp/github.md) — GitHub API via MCP
+- [notes/mcp/shadcn.md](notes/mcp/shadcn.md) — shadcn/ui component registry
+- [notes/mcp/ide-diagnostics.md](notes/mcp/ide-diagnostics.md) — TypeScript/lint errors via language server
+
+## Notes: Tools
+
+- [notes/rtk-token-saving.md](notes/rtk-token-saving.md) — RTK CLI proxy, 60–90% token reduction on shell commands
+- [notes/tools/gsd.md](notes/tools/gsd.md) — Spec-driven dev system with parallel subagent execution
+- [notes/tools/playwright.md](notes/tools/playwright.md) — Browser automation and E2E testing
+- [notes/tools/lighthouse.md](notes/tools/lighthouse.md) — Performance, accessibility, SEO auditing
+- [notes/tools/gitleaks.md](notes/tools/gitleaks.md) — Secret scanning in git history
