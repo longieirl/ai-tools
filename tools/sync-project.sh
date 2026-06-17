@@ -47,21 +47,32 @@ else
 fi
 rm -f "$AGENTS_TMP"
 
-# 3. CLAUDE.md — surgical import update, existing content preserved
+# 3. CLAUDE.md — ensure both @AGENTS.md and @.agent/global-claude.md are present
 if [ ! -f CLAUDE.md ]; then
-  printf '@.agent/global-claude.md\n' > CLAUDE.md
+  printf '@AGENTS.md\n@.agent/global-claude.md\n' > CLAUDE.md
   echo "Created CLAUDE.md"
-elif grep -q '@.agent/global-claude.md' CLAUDE.md; then
-  echo "CLAUDE.md unchanged"
-elif grep -q '@~/.claude/global-claude.md' CLAUDE.md; then
-  sed -i.bak 's|@~/.claude/global-claude.md|@.agent/global-claude.md|g' CLAUDE.md && rm -f CLAUDE.md.bak
-  echo "Updated CLAUDE.md import"
 else
-  MERGED=$(mktemp)
-  printf '@.agent/global-claude.md\n\n---\n\n' > "$MERGED"
-  cat CLAUDE.md >> "$MERGED"
-  mv "$MERGED" CLAUDE.md
-  echo "Prepended import to CLAUDE.md"
+  # Add @.agent/global-claude.md if missing (replace old symlink form if present)
+  if grep -q '@~/.claude/global-claude.md' CLAUDE.md; then
+    sed -i.bak 's|@~/.claude/global-claude.md|@.agent/global-claude.md|g' CLAUDE.md && rm -f CLAUDE.md.bak
+    echo "Updated CLAUDE.md: replaced @~/.claude/global-claude.md"
+  elif ! grep -q '@.agent/global-claude.md' CLAUDE.md; then
+    MERGED=$(mktemp)
+    printf '@AGENTS.md\n@.agent/global-claude.md\n\n---\n\n' > "$MERGED"
+    cat CLAUDE.md >> "$MERGED"
+    mv "$MERGED" CLAUDE.md
+    echo "Prepended imports to CLAUDE.md"
+  fi
+  # Add @AGENTS.md if missing
+  if ! grep -q '@AGENTS.md' CLAUDE.md; then
+    MERGED=$(mktemp)
+    printf '@AGENTS.md\n' > "$MERGED"
+    cat CLAUDE.md >> "$MERGED"
+    mv "$MERGED" CLAUDE.md
+    echo "Added @AGENTS.md to CLAUDE.md"
+  else
+    echo "CLAUDE.md unchanged"
+  fi
 fi
 
 # 4. Install global Claude Code commands into ~/.claude/commands/
