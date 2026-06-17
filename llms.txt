@@ -12,10 +12,10 @@ Personal collection of AI tools, prompts, configs, and workflows for use with Cl
 
 ## Key Files
 
-- [configs/global-claude.md](configs/global-claude.md) — Canonical Claude behavioral guidelines (Think Before Coding, Surgical Changes, Goal-Driven Execution). Import into any project via `@~/.claude/global-claude.md`.
+- [.agent/global-claude.md](.agent/global-claude.md) — Canonical Claude behavioral guidelines (Think Before Coding, Surgical Changes, Use Current Documentation, Goal-Driven Execution). Import into any project via `@~/.claude/global-claude.md`.
 - [configs/claude-example.md](configs/claude-example.md) — Base CLAUDE.md template. Copy into any project and extend the Project-Specific section.
 - [tools/setup-claude.sh](tools/setup-claude.sh) — One-time machine setup. Symlinks `global-claude.md` into `~/.claude/` so all projects stay in sync.
-- [AGENTS.md](AGENTS.md) — Project context for AI agents (structure, git conventions, setup).
+- [AGENTS.md](AGENTS.md) — Short AI agent entrypoint (required reading, key rules, upstream source link).
 
 ## Using Claude Guidelines
 
