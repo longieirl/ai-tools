@@ -32,8 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/AGENTS.md \
   -o /tmp/ai-tools-agents.md
 ```
 
-- No `AGENTS.md` → write the fetched content as-is
-- `AGENTS.md` exists → leave it unchanged (it may have project-specific customisation)
+Always overwrite `AGENTS.md` with the fetched content — write the file regardless of whether it already exists.
 
 **5. Commit**
 
