@@ -27,6 +27,15 @@ When your changes create orphans:
 
 The test: every changed line should trace directly to the user's request.
 
+# Use Current Documentation
+
+Don't rely on training data for library/framework/API behavior.
+
+When writing code that uses a library, framework, SDK, or external API:
+- Fetch current docs via Context7 before implementing.
+- If Context7 unavailable or lacks coverage, fall back to web search.
+- Training data is a last resort — API surfaces change.
+
 # Goal-Driven Execution
 
 Define success criteria. Loop until verified.
