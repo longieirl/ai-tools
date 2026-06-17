@@ -1,3 +1,4 @@
+<!-- sync:start — managed by longieirl/ai-tools, do not edit -->
 # AGENTS.md
 
 ## Required reading
@@ -28,3 +29,4 @@ The shared upstream version is maintained at:
 https://github.com/longieirl/ai-tools/blob/main/.agent/global-claude.md
 
 The local repository copy is authoritative for this project.
+<!-- sync:end -->
