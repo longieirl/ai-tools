@@ -33,7 +33,7 @@ Don't rely on training data for library/framework/API behavior.
 
 When writing code that uses a library, framework, SDK, or external API:
 - Fetch current docs via Context7 before implementing.
-- If Context7 lacks coverage, fall back to web search.
+- If Context7 unavailable or lacks coverage, fall back to web search.
 - Training data is a last resort — API surfaces change.
 
 # Goal-Driven Execution
