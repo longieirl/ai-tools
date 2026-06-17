@@ -12,6 +12,10 @@ workflows/      Multi-step AI workflow definitions
 notes/          Research notes, evaluations, comparisons
 ```
 
+## Key Files
+
+- [AGENTS.md](AGENTS.md) — Short AI agent entrypoint (required reading, key rules, upstream source link).
+
 ## Configs
 
 | File | Description |
