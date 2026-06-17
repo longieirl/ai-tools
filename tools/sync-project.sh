@@ -12,12 +12,7 @@ set -euo pipefail
 
 BASE="https://raw.githubusercontent.com/longieirl/ai-tools/main"
 
-# 1. .agent/global-claude.md — always overwrite (pure upstream content)
-mkdir -p .agent
-curl -fsSL "$BASE/.agent/global-claude.md" -o .agent/global-claude.md
-echo "Updated .agent/global-claude.md"
-
-# 2. AGENTS.md — marker-based merge
+# 1. AGENTS.md — marker-based merge
 #    Replaces content between <!-- sync:start --> and <!-- sync:end --> markers.
 #    Everything outside the markers is preserved.
 AGENTS_TMP=$(mktemp)
@@ -27,7 +22,6 @@ if [ ! -f AGENTS.md ]; then
   cp "$AGENTS_TMP" AGENTS.md
   echo "Created AGENTS.md"
 elif ! grep -q '<!-- sync:start' AGENTS.md; then
-  # No markers — prepend the full upstream block to existing content
   MERGED=$(mktemp)
   cat "$AGENTS_TMP" > "$MERGED"
   printf '\n' >> "$MERGED"
@@ -35,7 +29,6 @@ elif ! grep -q '<!-- sync:start' AGENTS.md; then
   mv "$MERGED" AGENTS.md
   echo "Updated AGENTS.md (prepended sync block — no prior markers found)"
 else
-  # Replace sync block, preserve content outside markers
   BEFORE=$(awk '/<!-- sync:start/{exit} {print}' AGENTS.md)
   AFTER=$(awk 'found{print} /<!-- sync:end/{found=1}' AGENTS.md)
   MERGED=$(mktemp)
@@ -47,24 +40,21 @@ else
 fi
 rm -f "$AGENTS_TMP"
 
-# 3. CLAUDE.md — surgical import update, existing content preserved
+# 2. CLAUDE.md — ensure @AGENTS.md is present, preserve all other content
 if [ ! -f CLAUDE.md ]; then
-  printf '@.agent/global-claude.md\n' > CLAUDE.md
+  printf '@AGENTS.md\n' > CLAUDE.md
   echo "Created CLAUDE.md"
-elif grep -q '@.agent/global-claude.md' CLAUDE.md; then
-  echo "CLAUDE.md unchanged"
-elif grep -q '@~/.claude/global-claude.md' CLAUDE.md; then
-  sed -i.bak 's|@~/.claude/global-claude.md|@.agent/global-claude.md|g' CLAUDE.md && rm -f CLAUDE.md.bak
-  echo "Updated CLAUDE.md import"
-else
+elif ! grep -q '@AGENTS.md' CLAUDE.md; then
   MERGED=$(mktemp)
-  printf '@.agent/global-claude.md\n\n---\n\n' > "$MERGED"
+  printf '@AGENTS.md\n\n---\n\n' > "$MERGED"
   cat CLAUDE.md >> "$MERGED"
   mv "$MERGED" CLAUDE.md
-  echo "Prepended import to CLAUDE.md"
+  echo "Prepended @AGENTS.md to CLAUDE.md"
+else
+  echo "CLAUDE.md unchanged"
 fi
 
-# 4. Install global Claude Code commands into ~/.claude/commands/
+# 3. Install global Claude Code commands into ~/.claude/commands/
 COMMANDS_DIR="$HOME/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
 for cmd in sync-ai-config update-global-config; do
@@ -72,7 +62,7 @@ for cmd in sync-ai-config update-global-config; do
   echo "Installed /${cmd} → $COMMANDS_DIR/${cmd}.md"
 done
 
-# 5. Wire up ~/.claude/global-claude.md and add to ~/.claude/CLAUDE.md
+# 4. Update ~/.claude/global-claude.md and wire into ~/.claude/CLAUDE.md
 curl -fsSL "$BASE/.agent/global-claude.md" -o "$HOME/.claude/global-claude.md"
 echo "Updated ~/.claude/global-claude.md"
 
@@ -87,9 +77,9 @@ else
   echo "$GLOBAL_CLAUDE already includes @global-claude.md"
 fi
 
-# 6. Commit if inside a git repo
+# 5. Commit if inside a git repo
 if git rev-parse --git-dir > /dev/null 2>&1; then
-  git add .agent/global-claude.md AGENTS.md CLAUDE.md 2>/dev/null || true
+  git add AGENTS.md CLAUDE.md 2>/dev/null || true
   if git diff --cached --quiet; then
     echo "Already up to date — nothing to commit."
   else
