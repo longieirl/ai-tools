@@ -38,6 +38,10 @@ git config core.hooksPath .github/hooks
 
 `core.hooksPath` enforces no direct commits or pushes to `main`.
 
+## AI Agent Behavior
+
+See [configs/global-claude.md](configs/global-claude.md) for full behavioral guidelines (Think Before Coding, Surgical Changes, Goal-Driven Execution). Read that file before starting any task.
+
 ## Adding Content
 
 - New prompt → `prompts/`
