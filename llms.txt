@@ -24,7 +24,7 @@ To apply these guidelines to any project:
 1. Run `bash tools/setup-claude.sh` once per machine
 2. Add `@~/.claude/global-claude.md` to the top of the project's CLAUDE.md
 
-Updates to `configs/global-claude.md` propagate to all projects automatically on next Claude session.
+Updates to `.agent/global-claude.md` propagate to all projects automatically on next Claude session.
 
 ## Prompts
 
