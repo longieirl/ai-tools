@@ -191,6 +191,7 @@ permissions:
 
 jobs:
   assign:
+    if: ${{ !endsWith(github.actor, '[bot]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
@@ -859,6 +860,7 @@ gh api repos/REPO/rulesets/$RULESET_ID \
 | `--no-verify` on bootstrap commit only | Hooks block themselves on first push — unavoidable one-time exception |
 | `enforce_admins: true` not used | Replaced by ruleset. Legacy `enforce_admins: true` blocked even the owner with no bypass path |
 | Auto-assign PR creator via Actions | GitHub has no native setting — Actions workflow needed. Explicit `pull-requests: write` permission required |
+| `if: !endsWith(github.actor, '[bot]')` on assign job | GitHub rejects bot users (Dependabot, GitHub Actions) as PR assignees — API returns 422. Job must be skipped for bot-opened PRs |
 | yamllint config in `.yamllint.yml` | Committed config lets contributors reproduce results locally; not inline flags |
 | `truthy.check-keys: false` | Permits `on:` key in GitHub Actions files without false positives |
 | Docker advisory exits 0 | Enforcement is via CODEOWNERS review, not automated failure. Known patterns documented in SECURITY.md |
