@@ -205,6 +205,13 @@ jobs:
             })
 ```
 
+> **Dependabot PRs:** The workflow skips bot actors, so Dependabot PRs are left unassigned. Assign the owner manually after Dependabot opens them:
+> ```bash
+> gh api repos/REPO/issues/PR_NUMBER/assignees --method POST --input - <<'EOF'
+> {"assignees":["OWNER"]}
+> EOF
+> ```
+
 ---
 
 ## Step 6: Contribution Files
