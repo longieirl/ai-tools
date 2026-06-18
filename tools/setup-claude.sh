@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # One-time machine setup: symlinks AITools config into ~/.claude/
 # Run once per machine. Installs:
-#   - @~/.claude/global-claude.md  (behavioral guidelines, auto-syncs on git pull)
-#   - /sync-ai-config command       (updates any project's AI config from this repo)
+#   - @~/.claude/global-claude.md       (behavioral guidelines, auto-syncs on git pull)
+#   - /sync-ai-config command           (updates any project's AI config from this repo)
+#   - /update-global-config command     (updates ~/.claude/global-claude.md)
+#   - /github-repo-lockdown command     (lock down a public GitHub repo)
+#   - /setup-dead-weight-audit command  (audit Claude setup files for dead-weight)
 
 set -euo pipefail
 
@@ -31,3 +34,7 @@ ln -sf "$SCRIPT_DIR/../.claude/commands/sync-ai-config.md" "$COMMANDS_DIR/sync-a
 echo "Installed /sync-ai-config → $COMMANDS_DIR/sync-ai-config.md"
 ln -sf "$SCRIPT_DIR/../.claude/commands/update-global-config.md" "$COMMANDS_DIR/update-global-config.md"
 echo "Installed /update-global-config → $COMMANDS_DIR/update-global-config.md"
+ln -sf "$SCRIPT_DIR/../.claude/commands/github-repo-lockdown.md" "$COMMANDS_DIR/github-repo-lockdown.md"
+echo "Installed /github-repo-lockdown → $COMMANDS_DIR/github-repo-lockdown.md"
+ln -sf "$SCRIPT_DIR/../.claude/commands/setup-dead-weight-audit.md" "$COMMANDS_DIR/setup-dead-weight-audit.md"
+echo "Installed /setup-dead-weight-audit → $COMMANDS_DIR/setup-dead-weight-audit.md"

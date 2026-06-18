@@ -5,11 +5,11 @@ Personal collection of AI tools, prompts, configs, and workflows.
 ## Structure
 
 ```
-prompts/        System prompts, reusable prompt templates
-tools/          Scripts, wrappers, CLI tools
-configs/        Config files and templates for AI tools (Claude, Cursor, etc.)
-workflows/      Multi-step AI workflow definitions
-notes/          Research notes, evaluations, comparisons
+.claude/commands/ Global slash commands — available as /command-name in any project after setup
+tools/            Scripts, wrappers, CLI tools
+configs/          Config files and templates for AI tools (Claude, Cursor, etc.)
+workflows/        Multi-step AI workflow definitions
+notes/            Research notes, evaluations, comparisons
 ```
 
 ## Key Files
@@ -57,12 +57,18 @@ Add this line at the top of the project's `CLAUDE.md`:
 
 Edit `.agent/global-claude.md` in this repo. All projects pick up the change automatically on next Claude session — no copying required.
 
-## Prompts
+## Commands
 
-| File | Description |
-|------|-------------|
-| [setup-dead-weight-audit.md](prompts/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference on typical tasks |
-| [github-repo-lockdown.md](prompts/github-repo-lockdown.md) | Lock down a public personal GitHub repo — rulesets, CODEOWNERS, local hooks, auto-delete branches |
+Slash commands available in any Claude Code session after running `setup-claude.sh`.
+
+| Command | File | Description |
+|---------|------|-------------|
+| `/sync-ai-config` | [sync-ai-config.md](.claude/commands/sync-ai-config.md) | Sync this project's AI config files from the upstream repo |
+| `/update-global-config` | [update-global-config.md](.claude/commands/update-global-config.md) | Update `~/.claude/global-claude.md` with latest behavioral guidelines |
+| `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
+| `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference |
+
+All commands live in `.claude/commands/`. `setup-claude.sh` symlinks them into `~/.claude/commands/` so they're available globally. To add a new command: create a `.md` file in `.claude/commands/`, add a `ln -sf` line in `tools/setup-claude.sh`, re-run setup.
 
 ## Notes
 
