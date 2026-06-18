@@ -117,8 +117,10 @@ Use a **ruleset**, not legacy branch protection. Personal repos support bypass a
 
 **Bypass actors — choose one:**
 
-- **Strict PR-only (recommended):** `"bypass_actors": []` — no one can bypass, including the owner. Every change goes through a PR.
-- **Emergency path:** set `bypass_mode: "pull_request"` — admin can merge their own PRs without a review, but cannot push directly to the branch.
+- **Strict PR-only:** `"bypass_actors": []` — no one can bypass, including the owner. Every change goes through a PR. **Only viable if there are at least two contributors who can approve each other's PRs.** A sole owner with `[]` will be permanently locked out of merging their own PRs.
+- **Solo owner / personal repo (recommended):** `bypass_mode: "pull_request"` — admin can merge their own PRs without a separate reviewer, but cannot push directly to the branch. Direct push is still blocked; all changes still require a PR.
+
+> **Solo owner deadlock:** `bypass_actors: []` + `require_code_owner_review: true` + being the sole CODEOWNER = you cannot merge any PR. If you are the only contributor, use `bypass_mode: "pull_request"`.
 
 > **Note:** `actor_id: 5` is documented by GitHub as the Repository Admin built-in role, but GitHub does not formally guarantee this numeric mapping will remain stable. Verify by checking `gh api repos/REPO/roles` at setup time.
 
@@ -139,7 +141,13 @@ gh api repos/REPO/rulesets \
       "exclude": []
     }
   },
-  "bypass_actors": [],
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "pull_request"
+    }
+  ],
   "rules": [
     { "type": "deletion" },
     { "type": "non_fast_forward" },
@@ -153,12 +161,7 @@ gh api repos/REPO/rulesets \
         "required_review_thread_resolution": true
       }
     }
-  ]
-}
-EOF
-```
-
-**Do not use legacy branch protection** (`/branches/main/protection`) for personal repos — it cannot grant per-user bypass, and `enforce_admins: true` blocks even the owner.
+  ] (`/branches/main/protection`) for personal repos — it cannot grant per-user bypass, and `enforce_admins: true` blocks even the owner.
 
 ---
 
@@ -792,7 +795,13 @@ gh api repos/REPO/rulesets/$RULESET_ID \
       "exclude": []
     }
   },
-  "bypass_actors": [],
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "pull_request"
+    }
+  ],
   "rules": [
     { "type": "deletion" },
     { "type": "non_fast_forward" },
@@ -837,7 +846,7 @@ gh api repos/REPO/rulesets/$RULESET_ID \
 |---|---|
 | Ruleset over legacy branch protection | Personal repos cannot set bypass actors in legacy protection. Rulesets support `RepositoryRole` bypass — owner can push directly |
 | `actor_id: 5` warning | GitHub confirms actor_id is required for RepositoryRole but does not formally document numeric role mappings as stable. Verify with `gh api repos/REPO/roles` at setup time |
-| `bypass_actors: []` default | Strict PR-only enforcement. Admin bypass via `bypass_mode: pull_request` available as documented option but conflicts with "all changes via PR" goal |
+| `bypass_actors: []` default | Strict PR-only enforcement. Only viable with multiple contributors. Solo owner + sole CODEOWNER = permanent lockout. Personal repos should use `bypass_mode: pull_request` |
 | `require_last_push_approval: true` | Prevents the last pusher from self-approving their own final change before merge |
 | `strict_required_status_checks_policy: true` | Requires branches to be up to date before merging — prevents stale-branch merges that pass CI on old base |
 | `~DEFAULT_BRANCH` ref pattern | Resolves to repo's default branch without hardcoding `main` |
