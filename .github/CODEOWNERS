@@ -1,1 +1,16 @@
+# Default owner for everything
 * @longieirl
+
+# GitHub Actions workflows
+.github/workflows/ @longieirl
+.github/CODEOWNERS @longieirl
+
+# Configuration
+*.yml @longieirl
+*.yaml @longieirl
+*.json @longieirl
+*.toml @longieirl
+
+# Security and legal
+SECURITY.md @longieirl
+LICENSE @longieirl
