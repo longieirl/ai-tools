@@ -422,36 +422,33 @@ find . -name "*.yml" -o -name "*.yaml" \
   | grep -v "^./.git/" | grep -v "^./.github/" | head -5
 ```
 
-- If results found: add yamllint to CI and create `.yamllint.yml`
-- If empty: skip yamllint — actionlint already covers `.github/workflows/` YAML
+- If results found outside `.github/`: add yamllint to CI scoped to `.` (whole repo) and create `.yamllint.yml`
+- If YAML only in `.github/`: still add yamllint, but scope CI step to `.github/` only
 
-If adding yamllint: calibrate rules against the existing repo state first — run yamllint locally, then relax rules until it passes cleanly against all current files before committing. New strictness applies only going forward.
+Rationale: `.github/` YAML (workflows, dependabot) has real syntax that can silently fail — wrong indentation, type coercion. actionlint validates Actions-specific semantics but not general YAML structure.
+
+Calibrate rules against the existing repo state first — run yamllint locally, relax rules until it passes cleanly against all current files before committing.
 
 Create `.yamllint.yml`:
 
 ```yaml
 extends: default
+
 rules:
-  document-start: disable
-  empty-lines:
-    max: 2
-  line-length:
-    max: 160
-    level: warning
-  comments:
-    min-spaces-from-content: 1
   truthy:
-    check-keys: false  # permits `on:` in GitHub Actions files
-ignore: |
-  .git
-  node_modules
+    allowed-values: ["true", "false", "on", "off"]
+    check-keys: false
+  document-start: disable
+  line-length:
+    max: 120
 ```
 
 Validate locally before committing:
 
 ```bash
-pip install yamllint
-yamllint -c .yamllint.yml .
+pip install yamllint --quiet
+# scope to .github/ if YAML is only there, otherwise use .
+yamllint .github/   # or: yamllint .
 ```
 
 ### actionlint
@@ -501,16 +498,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-**Add this step only if project YAML exists outside `.github/`:**
+**Add this step before Actions lint. Scope the path based on where YAML lives:**
 
 ```yaml
       - name: YAML lint
         run: |
           pip install yamllint --quiet
-          yamllint -c .yamllint.yml .
+          yamllint .github/   # use yamllint . if project has YAML outside .github/
 ```
-
-If adding the YAML lint step, also create `.yamllint.yml` (see configuration above).
 
 **⚠️ SHA verification required before committing any workflow.**
 
@@ -753,7 +748,7 @@ actionlint .github/workflows/*.yml
 ### Final checklist
 
 - [ ] All workflows validated locally (actionlint) before push
-- [ ] yamllint step only added to CI if project YAML files exist outside `.github/`
+- [ ] yamllint CI step scoped to `.github/` if YAML only lives there, otherwise `.`
 - [ ] No `${{ }}` expressions interpolated directly into `run:` shell blocks
 - [ ] yamllint passes against existing tree without modifying pre-existing files
 - [ ] LICENSE present and referenced in README
