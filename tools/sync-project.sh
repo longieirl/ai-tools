@@ -57,7 +57,7 @@ fi
 # 3. Install global Claude Code commands into ~/.claude/commands/
 COMMANDS_DIR="$HOME/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
-for cmd in sync-ai-config update-global-config github-repo-lockdown setup-dead-weight-audit; do
+for cmd in sync-ai-config update-global-config github-repo-lockdown setup-dead-weight-audit security-audit; do
   curl -fsSL "$BASE/.claude/commands/${cmd}.md" -o "$COMMANDS_DIR/${cmd}.md"
   echo "Installed /${cmd} → $COMMANDS_DIR/${cmd}.md"
 done
