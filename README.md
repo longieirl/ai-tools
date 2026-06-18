@@ -5,11 +5,11 @@ Personal collection of AI tools, prompts, configs, and workflows.
 ## Structure
 
 ```
-prompts/        System prompts, reusable prompt templates
-tools/          Scripts, wrappers, CLI tools
-configs/        Config files and templates for AI tools (Claude, Cursor, etc.)
-workflows/      Multi-step AI workflow definitions
-notes/          Research notes, evaluations, comparisons
+.claude/commands/ Global slash commands — available as /command-name in any project after setup
+tools/            Scripts, wrappers, CLI tools
+configs/          Config files and templates for AI tools (Claude, Cursor, etc.)
+workflows/        Multi-step AI workflow definitions
+notes/            Research notes, evaluations, comparisons
 ```
 
 ## Key Files
@@ -29,21 +29,23 @@ These guidelines are the single source of truth for Claude behavior across all p
 
 ### New machine setup (once)
 
+No git clone required. Run from anywhere:
+
 ```bash
-bash tools/setup-claude.sh
+curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/tools/setup-claude.sh | bash
 ```
 
-Creates `~/.claude/global-claude.md` as a symlink to `.agent/global-claude.md`. Any project referencing `@~/.claude/global-claude.md` will always use the latest version from this repo.
+Installs to `~/.claude/`:
+- `global-claude.md` — behavioral guidelines, loaded by all projects
+- `commands/` — all slash commands available in every Claude Code project
 
 ### New project
 
-Copy the template and extend it:
-
 ```bash
-cp /path/to/AITools/configs/claude-example.md ./CLAUDE.md
+curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/tools/sync-project.sh | bash
 ```
 
-Then fill in the `## Project-Specific` section at the bottom.
+Creates `AGENTS.md` and `CLAUDE.md` in the current directory, wired to the upstream source.
 
 ### Existing project
 
@@ -53,16 +55,28 @@ Add this line at the top of the project's `CLAUDE.md`:
 @~/.claude/global-claude.md
 ```
 
-### Updating guidelines
+### Updating
 
-Edit `.agent/global-claude.md` in this repo. All projects pick up the change automatically on next Claude session — no copying required.
+Re-run the machine setup to pull the latest commands and guidelines:
 
-## Prompts
+```bash
+curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/tools/setup-claude.sh | bash
+```
 
-| File | Description |
-|------|-------------|
-| [setup-dead-weight-audit.md](prompts/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference on typical tasks |
-| [github-repo-lockdown.md](prompts/github-repo-lockdown.md) | Lock down a public personal GitHub repo — rulesets, CODEOWNERS, local hooks, auto-delete branches |
+Or from within any Claude Code project, run `/sync-ai-config`.
+
+## Commands
+
+Slash commands available in any Claude Code session after running `setup-claude.sh`.
+
+| Command | File | Description |
+|---------|------|-------------|
+| `/sync-ai-config` | [sync-ai-config.md](.claude/commands/sync-ai-config.md) | Sync this project's AI config files from the upstream repo |
+| `/update-global-config` | [update-global-config.md](.claude/commands/update-global-config.md) | Update `~/.claude/global-claude.md` with latest behavioral guidelines |
+| `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
+| `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference |
+
+All commands live in `.claude/commands/`. `setup-claude.sh` symlinks them into `~/.claude/commands/` so they're available globally. To add a new command: create a `.md` file in `.claude/commands/`, add a `ln -sf` line in `tools/setup-claude.sh`, re-run setup.
 
 ## Notes
 
@@ -108,4 +122,4 @@ bash tools/setup-claude.sh
 git config core.hooksPath .github/hooks
 ```
 
-`setup-claude.sh` symlinks the Claude guidelines into `~/.claude/`. `core.hooksPath` enforces local protection on `main` (no direct commits or pushes).
+`setup-claude.sh` downloads Claude guidelines and commands into `~/.claude/`. `core.hooksPath` enforces local protection on `main` (no direct commits or pushes).
