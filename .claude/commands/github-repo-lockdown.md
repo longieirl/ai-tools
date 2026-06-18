@@ -313,6 +313,11 @@ Secret scanning push protection can be bypassed by users with write access. This
 
 <!-- Document accepted patterns here so reviewers do not re-flag them. -->
 <!-- Example: Docker socket mount required for Watchtower; NET_ADMIN required for WireGuard -->
+
+- **Solo-owner auto-approve (Dependabot):** Single maintainer (`@OWNER`). Dependabot PRs for semver-patch/minor are auto-approved without a second human review. Deliberate trade-off for solo-maintained projects. Major version bumps require manual review.
+- **Scorecard publishes results publicly:** `publish_results: true` exposes repo posture to scorecard.dev. Accepted for a public repo — findings are not sensitive.
+- **`id-token: write` in scorecard workflow:** Required by `ossf/scorecard-action` to publish results. Scoped to the scorecard job only.
+- **"Require approval from first-time contributors"** is a GitHub UI-only setting (Settings → Actions → General) with no API equivalent. Must be verified manually after setup.
 ```
 
 ### LICENSE
@@ -406,6 +411,49 @@ For repos with Docker, add:
     schedule:
       interval: weekly
 ```
+
+> **Note:** `package-ecosystem: docker` only tracks `FROM` image references in `Dockerfile`s. It does **not** track `image:` tags in `docker-compose.yml`. For compose-based stacks, rely on Docker Hub/registry security advisories or tooling like Renovate.
+
+### Dependabot auto-approve
+
+Reduces codeowner friction: Dependabot PRs for patch/minor updates are auto-approved, so the merge button activates after CI passes without a manual review step. Major version bumps skip auto-approve and require manual review.
+
+Create `.github/workflows/dependabot-approve.yml`:
+
+```yaml
+name: Dependabot auto-approve
+
+on:
+  pull_request
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98  # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Approve patch and minor updates
+        if: >-
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr review "$PR_URL" --approve
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+`pull_request` (not `pull_request_target`) is correct here — Dependabot PRs originate from the same repository (not a fork), so the token has write permissions on `pull_request`. Gate is `dependabot/fetch-metadata` `update-type` — major bumps fall through without approval.
+
+**Verify the `dependabot/fetch-metadata` SHA** using the SHA verification script before committing.
 
 ---
 
@@ -543,7 +591,7 @@ These rules apply to every workflow in this repository:
 
 2. **No `$(find ...)` substitution in `run:` blocks** — triggers shellcheck SC2046 via actionlint. Use `find ... | xargs` or `find ... -exec {} +` instead.
 
-3. **Use `pull_request` not `pull_request_target`** for PR-triggered jobs. Never combine `pull_request_target` with checkout of the PR head without fully understanding the security implications.
+3. **Use `pull_request` not `pull_request_target`** for PR-triggered jobs. Never combine `pull_request_target` with checkout of the PR head without fully understanding the security implications. Exception: `pull_request_target` is acceptable without a checkout when the job only calls a GitHub API (e.g., adding a label via `actions/github-script`).
 
 4. **Set `permissions:` to least-privilege** at workflow or job level. Default to `contents: read` and add only what each job requires.
 
@@ -555,12 +603,18 @@ These rules apply to every workflow in this repository:
 
 Skip this step if the repository contains no Dockerfiles or Docker Compose files.
 
-Create `.github/workflows/docker-advisory.yml` — this reports findings but does **not** fail the PR:
+Create `.github/workflows/docker-security.yml`. HIGH severity findings **fail the PR**; MEDIUM findings are advisory only. Known-accepted HIGH patterns must be documented in `SECURITY.md` before merge.
 
 ```yaml
-name: Docker security advisory
+name: Docker security review
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '**/Dockerfile*'
+      - '**/docker-compose*.yml'
+      - '**/docker-compose*.yaml'
   pull_request:
     paths:
       - '**/Dockerfile*'
@@ -571,45 +625,92 @@ permissions:
   contents: read
 
 jobs:
-  advisory:
+  security-review:
+    name: Docker Compose security review
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/checkout@<verified-sha>  # v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
 
-      - name: Scan for risky Docker patterns
+      - name: Detect changed stacks
+        id: changed
         run: |
-          echo "## Docker Security Advisory" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if git rev-parse --verify HEAD~1 > /dev/null 2>&1; then
+            changed=$(git diff --name-only HEAD~1 HEAD -- stacks/ \
+              | cut -d/ -f2 | sort -u)
+          else
+            changed=$(git ls-tree --name-only HEAD -- stacks/ | sort -u)
+          fi
+          # Multi-line GITHUB_OUTPUT — must use heredoc delimiter, not stacks=$changed
+          # (bare assignment silently drops all lines after the first)
+          {
+            echo "stacks<<EOF"
+            echo "$changed"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Changed stacks: $changed"
 
-          patterns=(
-            "privileged: true"
-            "network_mode: host"
-            "/var/run/docker.sock"
-            "cap_add"
-            "SYS_ADMIN"
-            "user: root"
-            "0\.0\.0\.0:"
-          )
+      - name: Run security review
+        env:
+          STACKS: ${{ steps.changed.outputs.stacks }}
+        run: |
+          stacks="$STACKS"
+          if [ -z "$stacks" ]; then
+            echo "No stacks changed, skipping security review."
+            exit 0
+          fi
 
-          found=0
-          for pattern in "${patterns[@]}"; do
-            matches=$(find . \( -name "Dockerfile*" -o -name "docker-compose*.yml" -o -name "docker-compose*.yaml" \) \
-              -exec grep -nH "$pattern" {} + 2>/dev/null || true)
-            if [ -n "$matches" ]; then
-              echo "**Pattern:** \`$pattern\`" >> "$GITHUB_STEP_SUMMARY"
-              echo '```' >> "$GITHUB_STEP_SUMMARY"
-              echo "$matches" >> "$GITHUB_STEP_SUMMARY"
-              echo '```' >> "$GITHUB_STEP_SUMMARY"
-              found=$((found + 1))
+          findings=0
+          high_findings=0
+
+          for stack in $stacks; do
+            compose="stacks/$stack/docker-compose.yml"
+            if [ ! -f "$compose" ]; then
+              echo "WARNING: $compose not found — skipping"
+              continue
             fi
+
+            echo ""
+            echo "=== Security review: $compose ==="
+
+            check() {
+              local label="$1"
+              local pattern="$2"
+              local severity="$3"
+              if grep -qE "$pattern" "$compose"; then
+                echo "  [$severity] $label"
+                findings=$((findings + 1))
+                if [ "$severity" = "HIGH" ]; then
+                  high_findings=$((high_findings + 1))
+                fi
+              fi
+            }
+
+            check "privileged: true"    'privileged:\s*true'              "HIGH"
+            check "network_mode: host"  'network_mode:\s*["'"'"']?host'   "HIGH"
+            check "SYS_ADMIN"           'SYS_ADMIN'                       "HIGH"
+            check "cap_add: ALL"        'ALL'                             "HIGH"
+            check "Docker socket mount" '/var/run/docker\.sock'           "MEDIUM - review required"
+            check "cap_add present"     'cap_add:'                        "MEDIUM - review capabilities list"
+            check "user: root"          'user:\s*["'"'"']?root'           "MEDIUM"
           done
 
-          if [ "$found" -eq 0 ]; then
-            echo "No risky patterns found." >> "$GITHUB_STEP_SUMMARY"
+          echo ""
+          if [ "$findings" -gt 0 ]; then
+            echo "Security review complete: $findings finding(s) require reviewer attention."
+            echo "See SECURITY.md for known-accepted patterns in this repository."
+          else
+            echo "Security review complete: no flagged patterns found."
           fi
+
+          # HIGH severity findings fail the build. exit value = number of HIGH findings.
+          # Document known-accepted HIGH patterns in SECURITY.md before merging.
+          exit "$high_findings"
 ```
 
-Document known-accepted patterns in `SECURITY.md` so reviewers do not re-flag them.
+Adapt the `paths:` filter and `stacks/` prefix to the repo's actual structure.
 
 ---
 
