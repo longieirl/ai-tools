@@ -329,7 +329,7 @@ echo -e "\n## License\n\n[MIT](LICENSE)" >> README.md
 
 ## Step 8: Repository Security Settings
 
-Enable via GitHub UI (`Settings → Security`) or CLI:
+All settings below are configurable via CLI:
 
 ```bash
 # Enable Dependabot alerts
@@ -338,16 +338,19 @@ gh api repos/REPO/vulnerability-alerts --method PUT
 # Enable Dependabot security updates
 gh api repos/REPO/automated-security-fixes --method PUT
 
-# Enable secret scanning (requires GitHub Advanced Security on public repos — enabled by default)
-# Enable push protection via: Settings → Security → Secret scanning → Push protection
+# Enable secret scanning + push protection
+gh api repos/REPO --method PATCH \
+  --field security_and_analysis='{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}'
 ```
 
-**Via GitHub UI — check all three:**
-1. Settings → Security → Dependabot alerts → Enable
-2. Settings → Security → Dependabot security updates → Enable
-3. Settings → Security → Secret scanning → Enable push protection
+Verify current state:
 
-Code scanning: Settings → Security → Code scanning → Set up → default configuration.
+```bash
+gh api repos/REPO --jq '.security_and_analysis'
+```
+
+**Code scanning** has no REST API for enabling the default configuration — requires GitHub UI:
+Settings → Advanced Security → Code scanning → Set up → Default
 
 ---
 
