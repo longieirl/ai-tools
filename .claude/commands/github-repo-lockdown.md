@@ -18,7 +18,11 @@ Before starting, identify:
 
 - `REPO` — GitHub repo in `owner/name` format (e.g. `longieirl/ai-tools`)
 - `OWNER` — GitHub username of the repo owner (e.g. `longieirl`)
-- `DEFAULT_BRANCH` — usually `main`
+- `DEFAULT_BRANCH` — resolve dynamically; do not hardcode `main`
+
+```bash
+DEFAULT_BRANCH="$(gh repo view "$REPO" --json defaultBranchRef --jq '.defaultBranchRef.name')"
+```
 
 **Do not assume values for these variables. If any are missing, ask before proceeding.**
 
@@ -76,9 +80,12 @@ cat > .github/CODEOWNERS <<'EOF'
 # Source code
 src/ @OWNER
 
-# GitHub Actions workflows
+# GitHub Actions and automation
 .github/workflows/ @OWNER
 .github/CODEOWNERS @OWNER
+.github/actions/ @OWNER
+.github/dependabot.yml @OWNER
+.github/ISSUE_TEMPLATE/ @OWNER
 
 # Configuration
 *.yml @OWNER
@@ -94,13 +101,30 @@ EOF
 
 Commit and push this file before applying branch protection — rulesets reference it.
 
+**Validate after pushing:**
+
+```bash
+gh api repos/REPO/codeowners/errors --jq '.errors'
+```
+
+A malformed CODEOWNERS file silently weakens ownership review — no error is surfaced unless you explicitly check. CODEOWNERS entries must reference users or teams with write or admin access; entries for users without access are silently ignored.
+
 ---
 
 ## Step 3: Branch Ruleset
 
 Use a **ruleset**, not legacy branch protection. Personal repos support bypass actors in rulesets but not in legacy branch protection.
 
-`actor_id: 5` = Repository Admin role (built-in). This lets the owner push directly without a PR.
+**Bypass actors — choose one:**
+
+- **Strict PR-only:** `"bypass_actors": []` — no one can bypass, including the owner. Every change goes through a PR. **Only viable if there are at least two contributors who can approve each other's PRs.** A sole owner with `[]` will be permanently locked out of merging their own PRs.
+- **Solo owner / personal repo (recommended):** `bypass_mode: "pull_request"` — admin can merge their own PRs without a separate reviewer, but cannot push directly to the branch. Direct push is still blocked; all changes still require a PR.
+
+> **Solo owner deadlock:** `bypass_actors: []` + `require_code_owner_review: true` + being the sole CODEOWNER = you cannot merge any PR. If you are the only contributor, use `bypass_mode: "pull_request"`.
+
+> **Note:** `actor_id: 5` is documented by GitHub as the Repository Admin built-in role, but GitHub does not formally guarantee this numeric mapping will remain stable. Verify by checking `gh api repos/REPO/roles` at setup time.
+
+Use `~DEFAULT_BRANCH` as the ref pattern — it resolves to the repo's default branch without hardcoding `main`.
 
 ```bash
 gh api repos/REPO/rulesets \
@@ -108,12 +132,12 @@ gh api repos/REPO/rulesets \
   --header "Accept: application/vnd.github+json" \
   --input - <<'EOF'
 {
-  "name": "Protect main",
+  "name": "Protect default branch",
   "target": "branch",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
-      "include": ["refs/heads/main"],
+      "include": ["~DEFAULT_BRANCH"],
       "exclude": []
     }
   },
@@ -121,7 +145,7 @@ gh api repos/REPO/rulesets \
     {
       "actor_id": 5,
       "actor_type": "RepositoryRole",
-      "bypass_mode": "always"
+      "bypass_mode": "pull_request"
     }
   ],
   "rules": [
@@ -133,16 +157,11 @@ gh api repos/REPO/rulesets \
         "required_approving_review_count": 1,
         "require_code_owner_review": true,
         "dismiss_stale_reviews_on_push": true,
-        "require_last_push_approval": false,
+        "require_last_push_approval": true,
         "required_review_thread_resolution": true
       }
     }
-  ]
-}
-EOF
-```
-
-**Do not use legacy branch protection** (`/branches/main/protection`) for personal repos — it cannot grant per-user bypass, and `enforce_admins: true` blocks even the owner.
+  ] (`/branches/main/protection`) for personal repos — it cannot grant per-user bypass, and `enforce_admins: true` blocks even the owner.
 
 ---
 
@@ -213,6 +232,8 @@ jobs:
   personal environment paths in any committed file.
 - Match existing code style and naming conventions.
 - External contributors cannot merge — all PRs require owner review.
+- All PRs merge via squash commit only — no merge commits, no rebase merge.
+- Do not use self-hosted runners in any workflow triggered by pull requests from untrusted contributors. GitHub warns that self-hosted runners on public repos can be compromised by malicious PR code.
 
 ## Git hooks
 
@@ -275,6 +296,10 @@ Include:
 Do not open a public issue for security vulnerabilities.
 
 **Expected response:** acknowledgement within 7 days, resolution timeline within 30 days.
+
+## Push protection bypass policy
+
+Secret scanning push protection can be bypassed by users with write access. This is not permitted unless the detected secret is a confirmed false positive. Any bypass must be reviewed by the repository owner. Bypass events are logged in the repository audit log.
 
 ## Known accepted risks
 
@@ -351,6 +376,28 @@ gh api repos/REPO --jq '.security_and_analysis'
 
 **Code scanning** has no REST API for enabling the default configuration — requires GitHub UI:
 Settings → Advanced Security → Code scanning → Set up → Default
+
+### Dependabot configuration
+
+Enabling Dependabot alerts (above) notifies about vulnerable dependencies but does not configure automated update PRs. Add `.github/dependabot.yml`:
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+```
+
+For repos with Docker, add:
+
+```yaml
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+```
 
 ---
 
@@ -434,7 +481,8 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # gitleaks scans the full commit range; required for PR diff scan
+          persist-credentials: false
 
       - name: Actions lint
         uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8  # v2
@@ -562,7 +610,47 @@ Document known-accepted patterns in `SECURITY.md` so reviewers do not re-flag th
 
 ---
 
-## Step 11: Local Git Hooks
+## Step 11: OpenSSF Scorecard
+
+Add a non-blocking scorecard workflow to detect supply-chain risks (script injection, token permissions, unpinned actions). Reports to GitHub Security tab via SARIF.
+
+**SHA verification required** — fetch the verified SHAs for `actions/checkout` and `ossf/scorecard-action` using the SHA verification script in Step 9 before committing.
+
+```yaml
+name: Scorecard
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: '30 3 * * 1'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@<verified-sha>  # v4
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@<verified-sha>
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+```
+
+This workflow exits 0 regardless of findings — enforcement is via CODEOWNERS review and the Security tab. Run locally with `scorecard --repo REPO` to preview results before committing.
+
+---
+
+## Step 12: Local Git Hooks
 
 Create hooks in `.github/hooks/` so they are committed and shared with the repo.
 
@@ -600,12 +688,23 @@ git config core.hooksPath .github/hooks
 
 ---
 
-## Step 12: Bootstrap Commit
+## Step 13: Bootstrap Commit
 
 Hooks enforce rules on themselves — the first push of the hook files will be blocked by the pre-push hook. Use `--no-verify` once for this bootstrap commit only:
 
+Add `.gitattributes` to normalise line endings across platforms:
+
+```
+* text=auto
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+```
+
+Then bootstrap:
+
 ```bash
-git add .github/ CONTRIBUTING.md SECURITY.md LICENSE .yamllint.yml
+git add .github/ CONTRIBUTING.md SECURITY.md LICENSE .gitattributes
 git commit --no-verify -m "chore: add repo governance, CI validation, and security hardening"
 git push --no-verify
 ```
@@ -614,7 +713,7 @@ This is the only valid use of `--no-verify` in this setup.
 
 ---
 
-## Step 13: Verify
+## Step 14: Verify
 
 ```bash
 # Ruleset active
@@ -652,16 +751,23 @@ actionlint .github/workflows/*.yml
 - [ ] LICENSE present and referenced in README
 - [ ] `.gitignore` has no erroneous `!` negations on sensitive file patterns
 - [ ] Sensitive files (`.env`, credentials) confirmed ignored
-- [ ] `main` branch rejects direct push
-- [ ] Required status checks wired to ruleset (Step 14 — run after first CI pass)
+- [ ] Default branch rejects direct push
+- [ ] CODEOWNERS validation clean (`codeowners/errors` returns no errors)
+- [ ] `.github/dependabot.yml` committed (github-actions ecosystem at minimum)
+- [ ] `.gitattributes` committed
+- [ ] Required status checks wired to ruleset (Step 15 — run after first CI pass)
+- [ ] `strict_required_status_checks_policy: true` set (branches must be up to date before merge)
 - [ ] Dependabot alerts enabled
 - [ ] Secret scanning with push protection enabled
+- [ ] Push protection bypass policy documented in SECURITY.md
 - [ ] SECURITY.md documents known-accepted risks
 - [ ] Code scanning enabled: Settings → Advanced Security → Code scanning → Set up → Default
+- [ ] OpenSSF Scorecard workflow committed and reporting to Security tab
+- [ ] No self-hosted runners used for PR-triggered workflows
 
 ---
 
-## Step 14: Wire Required Status Checks
+## Step 15: Wire Required Status Checks
 
 **Run this after the first CI workflow completes successfully on a PR.**
 
@@ -669,7 +775,7 @@ Required status checks cannot be added to the ruleset before the check name exis
 
 ```bash
 # Get the ruleset ID
-RULESET_ID=$(gh api repos/REPO/rulesets --jq '.[] | select(.name == "Protect main") | .id')
+RULESET_ID=$(gh api repos/REPO/rulesets --jq '.[] | select(.name == "Protect default branch") | .id')
 
 # Fetch current ruleset rules (needed for full PUT body)
 CURRENT=$(gh api repos/REPO/rulesets/$RULESET_ID)
@@ -680,12 +786,12 @@ gh api repos/REPO/rulesets/$RULESET_ID \
   --header "Accept: application/vnd.github+json" \
   --input - <<EOF
 {
-  "name": "Protect main",
+  "name": "Protect default branch",
   "target": "branch",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
-      "include": ["refs/heads/main"],
+      "include": ["~DEFAULT_BRANCH"],
       "exclude": []
     }
   },
@@ -693,7 +799,7 @@ gh api repos/REPO/rulesets/$RULESET_ID \
     {
       "actor_id": 5,
       "actor_type": "RepositoryRole",
-      "bypass_mode": "always"
+      "bypass_mode": "pull_request"
     }
   ],
   "rules": [
@@ -705,14 +811,14 @@ gh api repos/REPO/rulesets/$RULESET_ID \
         "required_approving_review_count": 1,
         "require_code_owner_review": true,
         "dismiss_stale_reviews_on_push": true,
-        "require_last_push_approval": false,
+        "require_last_push_approval": true,
         "required_review_thread_resolution": true
       }
     },
     {
       "type": "required_status_checks",
       "parameters": {
-        "strict_required_status_checks_policy": false,
+        "strict_required_status_checks_policy": true,
         "required_status_checks": [
           { "context": "lint" }
         ]
@@ -739,7 +845,16 @@ gh api repos/REPO/rulesets/$RULESET_ID \
 | Decision | Reason |
 |---|---|
 | Ruleset over legacy branch protection | Personal repos cannot set bypass actors in legacy protection. Rulesets support `RepositoryRole` bypass — owner can push directly |
-| `actor_id: 5` (Admin role) | Built-in repo role. Grants bypass to owner without naming specific users |
+| `actor_id: 5` warning | GitHub confirms actor_id is required for RepositoryRole but does not formally document numeric role mappings as stable. Verify with `gh api repos/REPO/roles` at setup time |
+| `bypass_actors: []` default | Strict PR-only enforcement. Only viable with multiple contributors. Solo owner + sole CODEOWNER = permanent lockout. Personal repos should use `bypass_mode: pull_request` |
+| `require_last_push_approval: true` | Prevents the last pusher from self-approving their own final change before merge |
+| `strict_required_status_checks_policy: true` | Requires branches to be up to date before merging — prevents stale-branch merges that pass CI on old base |
+| `~DEFAULT_BRANCH` ref pattern | Resolves to repo's default branch without hardcoding `main` |
+| `persist-credentials: false` on checkout | Prevents accidental token leak if a subsequent step exfiltrates the workspace |
+| `fetch-depth: 0` in CI | Required specifically for gitleaks — it scans the full PR commit range and fails with "ambiguous argument" on shallow clones |
+| OpenSSF Scorecard non-blocking | Surfaces supply-chain findings without blocking contributors; enforcement via CODEOWNERS review |
+| `.gitattributes` line endings | Prevents CRLF/LF inconsistencies from polluting diffs and breaking shell scripts on cross-platform repos |
+| Dependabot.yml alongside alerts | Alerts notify about vulnerabilities; `dependabot.yml` is required to actually open automated update PRs |
 | Hooks in `.github/hooks/` not `.git/hooks/` | `.git/` is not committed. `.github/hooks/` is tracked and shared |
 | `--no-verify` on bootstrap commit only | Hooks block themselves on first push — unavoidable one-time exception |
 | `enforce_admins: true` not used | Replaced by ruleset. Legacy `enforce_admins: true` blocked even the owner with no bypass path |
