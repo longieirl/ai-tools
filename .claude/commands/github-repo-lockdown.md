@@ -651,10 +651,84 @@ actionlint .github/workflows/*.yml
 - [ ] `.gitignore` has no erroneous `!` negations on sensitive file patterns
 - [ ] Sensitive files (`.env`, credentials) confirmed ignored
 - [ ] `main` branch rejects direct push
-- [ ] All CI status checks required before merge (add check names to ruleset after first CI run)
+- [ ] Required status checks wired to ruleset (Step 14 — run after first CI pass)
 - [ ] Dependabot alerts enabled
 - [ ] Secret scanning with push protection enabled
 - [ ] SECURITY.md documents known-accepted risks
+- [ ] Code scanning enabled: Settings → Advanced Security → Code scanning → Set up → Default
+
+---
+
+## Step 14: Wire Required Status Checks
+
+**Run this after the first CI workflow completes successfully on a PR.**
+
+Required status checks cannot be added to the ruleset before the check name exists in GitHub — the check name is only registered after the first run.
+
+```bash
+# Get the ruleset ID
+RULESET_ID=$(gh api repos/REPO/rulesets --jq '.[] | select(.name == "Protect main") | .id')
+
+# Fetch current ruleset rules (needed for full PUT body)
+CURRENT=$(gh api repos/REPO/rulesets/$RULESET_ID)
+
+# Add required_status_checks rule
+gh api repos/REPO/rulesets/$RULESET_ID \
+  --method PUT \
+  --header "Accept: application/vnd.github+json" \
+  --input - <<EOF
+{
+  "name": "Protect main",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ],
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "require_code_owner_review": true,
+        "dismiss_stale_reviews_on_push": true,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "required_status_checks": [
+          { "context": "lint" }
+        ]
+      }
+    }
+  ]
+}
+EOF
+```
+
+If the CI workflow has multiple jobs, add each job name to `required_status_checks`. The `context` value must exactly match the job name in the workflow file.
+
+Verify:
+
+```bash
+gh api repos/REPO/rulesets/$RULESET_ID \
+  --jq '.rules[] | select(.type == "required_status_checks") | .parameters.required_status_checks'
+```
 
 ---
 
