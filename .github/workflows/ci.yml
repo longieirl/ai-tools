@@ -14,11 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
-      - name: YAML lint
-        run: |
-          pip install yamllint --quiet
-          yamllint -c .yamllint.yml .
-
       - name: Actions lint
         uses: raven-actions/actionlint@3a0b5a96f5f8e2af9e86e3bb0f8fb55698b91a4f  # v2
 

@@ -344,7 +344,17 @@ Trigger: `pull_request` and `push` to `main`. Fail the PR if any check fails.
 
 ### yamllint configuration
 
-Calibrate rules against the existing repo state first — run yamllint locally, then relax rules until it passes cleanly against all current files before committing. New strictness applies only going forward.
+**First: check if the repo has project YAML files outside `.github/`:**
+
+```bash
+find . -name "*.yml" -o -name "*.yaml" \
+  | grep -v "^./.git/" | grep -v "^./.github/" | head -5
+```
+
+- If results found: add yamllint to CI and create `.yamllint.yml`
+- If empty: skip yamllint — actionlint already covers `.github/workflows/` YAML
+
+If adding yamllint: calibrate rules against the existing repo state first — run yamllint locally, then relax rules until it passes cleanly against all current files before committing. New strictness applies only going forward.
 
 Create `.yamllint.yml`:
 
@@ -387,7 +397,9 @@ actionlint .github/workflows/*.yml
 
 ### CI workflow
 
-Create `.github/workflows/ci.yml`:
+Create `.github/workflows/ci.yml`. Only include the YAML lint step if project YAML files exist outside `.github/` (see check above).
+
+**Base workflow (always):**
 
 ```yaml
 name: CI
@@ -406,11 +418,6 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
-      - name: YAML lint
-        run: |
-          pip install yamllint --quiet
-          yamllint -c .yamllint.yml .
-
       - name: Actions lint
         uses: raven-actions/actionlint@3a0b5a96f5f8e2af9e86e3bb0f8fb55698b91a4f  # v2
 
@@ -420,7 +427,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-**Pin all third-party actions by full commit SHA, not by mutable tag.** The SHAs above are examples — verify current values at time of setup.
+**Add this step only if project YAML exists outside `.github/`:**
+
+```yaml
+      - name: YAML lint
+        run: |
+          pip install yamllint --quiet
+          yamllint -c .yamllint.yml .
+```
+
+If adding the YAML lint step, also create `.yamllint.yml` (see configuration above).
 
 ### GitHub Actions security rules
 
@@ -593,7 +609,8 @@ actionlint .github/workflows/*.yml
 
 ### Final checklist
 
-- [ ] All workflows validated locally (actionlint + yamllint) before push
+- [ ] All workflows validated locally (actionlint) before push
+- [ ] yamllint step only added to CI if project YAML files exist outside `.github/`
 - [ ] No `${{ }}` expressions interpolated directly into `run:` shell blocks
 - [ ] yamllint passes against existing tree without modifying pre-existing files
 - [ ] LICENSE present and referenced in README
