@@ -1,23 +1,32 @@
 #!/usr/bin/env bash
-# One-time machine setup: symlinks AITools config into ~/.claude/
-# Run once per machine. Installs:
-#   - @~/.claude/global-claude.md       (behavioral guidelines, auto-syncs on git pull)
-#   - /sync-ai-config command           (updates any project's AI config from this repo)
-#   - /update-global-config command     (updates ~/.claude/global-claude.md)
-#   - /github-repo-lockdown command     (lock down a public GitHub repo)
-#   - /setup-dead-weight-audit command  (audit Claude setup files for dead-weight)
+# One-time machine setup: installs AI tools config and commands into ~/.claude/
+# No git clone required.
+#
+# Run remotely:
+#   curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/tools/setup-claude.sh | bash
+#
+# Or locally if you have the repo:
+#   bash tools/setup-claude.sh
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE="https://raw.githubusercontent.com/longieirl/ai-tools/main"
+CLAUDE_DIR="$HOME/.claude"
+COMMANDS_DIR="$CLAUDE_DIR/commands"
+mkdir -p "$COMMANDS_DIR"
 
-SOURCE="$SCRIPT_DIR/../.agent/global-claude.md"
-TARGET="$HOME/.claude/global-claude.md"
-ln -sf "$SOURCE" "$TARGET"
-echo "Linked $TARGET → $SOURCE"
+# Install global commands
+for cmd in sync-ai-config update-global-config github-repo-lockdown setup-dead-weight-audit; do
+  curl -fsSL "$BASE/.claude/commands/${cmd}.md" -o "$COMMANDS_DIR/${cmd}.md"
+  echo "Installed /${cmd} → $COMMANDS_DIR/${cmd}.md"
+done
 
-# Wire up global-claude.md in ~/.claude/CLAUDE.md if not already present
-GLOBAL_CLAUDE="$HOME/.claude/CLAUDE.md"
+# Install global-claude.md
+curl -fsSL "$BASE/.agent/global-claude.md" -o "$CLAUDE_DIR/global-claude.md"
+echo "Installed ~/.claude/global-claude.md"
+
+# Wire global-claude.md into ~/.claude/CLAUDE.md if not already present
+GLOBAL_CLAUDE="$CLAUDE_DIR/CLAUDE.md"
 if [ ! -f "$GLOBAL_CLAUDE" ]; then
   printf '@global-claude.md\n' > "$GLOBAL_CLAUDE"
   echo "Created $GLOBAL_CLAUDE with @global-claude.md"
@@ -28,13 +37,9 @@ else
   echo "$GLOBAL_CLAUDE already includes @global-claude.md"
 fi
 
-COMMANDS_DIR="$HOME/.claude/commands"
-mkdir -p "$COMMANDS_DIR"
-ln -sf "$SCRIPT_DIR/../.claude/commands/sync-ai-config.md" "$COMMANDS_DIR/sync-ai-config.md"
-echo "Installed /sync-ai-config → $COMMANDS_DIR/sync-ai-config.md"
-ln -sf "$SCRIPT_DIR/../.claude/commands/update-global-config.md" "$COMMANDS_DIR/update-global-config.md"
-echo "Installed /update-global-config → $COMMANDS_DIR/update-global-config.md"
-ln -sf "$SCRIPT_DIR/../.claude/commands/github-repo-lockdown.md" "$COMMANDS_DIR/github-repo-lockdown.md"
-echo "Installed /github-repo-lockdown → $COMMANDS_DIR/github-repo-lockdown.md"
-ln -sf "$SCRIPT_DIR/../.claude/commands/setup-dead-weight-audit.md" "$COMMANDS_DIR/setup-dead-weight-audit.md"
-echo "Installed /setup-dead-weight-audit → $COMMANDS_DIR/setup-dead-weight-audit.md"
+echo ""
+echo "Done. Commands available in any Claude Code project:"
+echo "  /sync-ai-config           — sync project AI config from longieirl/ai-tools"
+echo "  /update-global-config     — update global behavioral guidelines"
+echo "  /github-repo-lockdown     — lock down a public GitHub repo"
+echo "  /setup-dead-weight-audit  — audit Claude setup files for dead-weight"
