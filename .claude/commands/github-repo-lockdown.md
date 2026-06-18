@@ -174,7 +174,7 @@ jobs:
   assign:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@60a0d83039f74b4cbd4b2827b1f7c1a6043aa3c4  # v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         with:
           script: |
             await github.rest.issues.addAssignees({
@@ -429,13 +429,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Actions lint
-        uses: raven-actions/actionlint@3a0b5a96f5f8e2af9e86e3bb0f8fb55698b91a4f  # v2
+        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8  # v2
 
       - name: Secrets scan
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # v2
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -450,6 +450,24 @@ jobs:
 ```
 
 If adding the YAML lint step, also create `.yamllint.yml` (see configuration above).
+
+**⚠️ SHA verification required before committing any workflow.**
+
+The SHAs in this document must be verified at setup time — they go stale as actions release new versions. Run this before committing:
+
+```bash
+for ref in "actions/checkout:v4" "actions/github-script:v7" "raven-actions/actionlint:v2" "gitleaks/gitleaks-action:v3"; do
+  repo="${ref%%:*}"; tag="${ref##*:}"
+  result=$(gh api "repos/$repo/git/ref/tags/$tag" --jq '[.object.sha, .object.type] | @tsv')
+  sha=$(echo "$result" | cut -f1); type=$(echo "$result" | cut -f2)
+  if [ "$type" = "tag" ]; then
+    sha=$(gh api "repos/$repo/git/tags/$sha" --jq '.object.sha' 2>/dev/null || echo "$sha")
+  fi
+  echo "$repo@$tag → $sha"
+done
+```
+
+Replace the SHAs in your workflow files with the output before committing.
 
 ### GitHub Actions security rules
 
@@ -500,7 +518,7 @@ jobs:
   advisory:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Scan for risky Docker patterns
         run: |
