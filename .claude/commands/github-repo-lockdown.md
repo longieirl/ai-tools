@@ -20,6 +20,19 @@ Before starting, identify:
 - `OWNER` — GitHub username of the repo owner (e.g. `longieirl`)
 - `DEFAULT_BRANCH` — usually `main`
 
+**Do not assume values for these variables. If any are missing, ask before proceeding.**
+
+## Clarifications required before any step executes
+
+Ask the user if not already provided:
+
+1. **License type** — MIT, Apache-2.0, or other? Do not add a LICENSE without confirming. If one already exists, do not overwrite it.
+2. **Project YAML** — Does this repo use YAML for project config (docker-compose, Kubernetes, Ansible, etc.)? This determines whether to add yamllint to CI.
+3. **Docker/containers** — Does this repo contain Dockerfiles or Compose files? This determines whether to add the Docker advisory workflow (Step 10).
+4. **Existing CI** — Are there existing workflows that must be preserved or integrated with?
+
+Surface findings from the pre-flight audit (Step 1) and confirm any non-obvious decisions before making changes.
+
 ---
 
 ## Step 1: Pre-flight Audit
