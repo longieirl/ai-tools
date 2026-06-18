@@ -1,43 +1,34 @@
 # AI Tools
 
-Personal collection of AI tools, prompts, configs, and workflows.
+Tooling for AI-assisted development — behavioral guidelines, slash commands, and repo governance. Primarily built for Claude Code; guidelines are compatible with Cursor, GitHub Copilot, and Gemini CLI via `AGENTS.md`.
 
 ## Structure
 
 ```
-.claude/commands/ Global slash commands — available as /command-name in any project after setup
-tools/            Scripts, wrappers, CLI tools
-configs/          Config files and templates for AI tools (Claude, Cursor, etc.)
-workflows/        Multi-step AI workflow definitions
-notes/            Research notes, evaluations, comparisons
+.claude/commands/ Slash commands — available as /command-name in any Claude Code project after setup
+tools/            Setup and sync scripts
+configs/          Config templates for AI coding assistants
+notes/            Research notes, evaluations, tool comparisons
 ```
 
 ## Key Files
 
-- [AGENTS.md](AGENTS.md) — Short AI agent entrypoint (required reading, key rules, upstream source link).
+- [AGENTS.md](AGENTS.md) — AI agent behavioral guidelines. Read by Claude Code, Cursor, Copilot, and Gemini CLI.
+- [global-claude.md](.agent/global-claude.md) — Canonical behavioral rules imported by all Claude Code projects.
 
-## Configs
+## Setup
 
-| File | Description |
-|------|-------------|
-| [global-claude.md](.agent/global-claude.md) | Canonical behavioral guidelines — imported by all projects via `@~/.claude/global-claude.md` |
-| [claude-example.md](configs/claude-example.md) | Base CLAUDE.md template — copy into any project and extend the Project-Specific section |
+### New machine (once)
 
-## Using Claude Guidelines in a Project
-
-These guidelines are the single source of truth for Claude behavior across all projects.
-
-### New machine setup (once)
-
-No git clone required. Run from anywhere:
+No git clone required:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/tools/setup-claude.sh | bash
 ```
 
 Installs to `~/.claude/`:
-- `global-claude.md` — behavioral guidelines, loaded by all projects
-- `commands/` — all slash commands available in every Claude Code project
+- `global-claude.md` — behavioral guidelines, loaded by all Claude Code projects
+- `commands/` — all slash commands available in every Claude Code session
 
 ### New project
 
@@ -49,7 +40,7 @@ Creates `AGENTS.md` and `CLAUDE.md` in the current directory, wired to the upstr
 
 ### Existing project
 
-Add this line at the top of the project's `CLAUDE.md`:
+Add to the top of the project's `CLAUDE.md`:
 
 ```
 @~/.claude/global-claude.md
@@ -57,13 +48,11 @@ Add this line at the top of the project's `CLAUDE.md`:
 
 ### Updating
 
-Re-run the machine setup to pull the latest commands and guidelines:
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/longieirl/ai-tools/main/tools/setup-claude.sh | bash
 ```
 
-Or from within any Claude Code project, run `/sync-ai-config`.
+Or from within any Claude Code project: `/sync-ai-config`.
 
 ## Commands
 
@@ -74,10 +63,10 @@ Slash commands available in any Claude Code session after running `setup-claude.
 | `/sync-ai-config` | [sync-ai-config.md](.claude/commands/sync-ai-config.md) | Sync this project's AI config files from the upstream repo |
 | `/update-global-config` | [update-global-config.md](.claude/commands/update-global-config.md) | Update `~/.claude/global-claude.md` with latest behavioral guidelines |
 | `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
-| `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference |
+| `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit AI setup files for dead-weight instructions that produce no observable difference |
 | `/security-audit` | [security-audit.md](.claude/commands/security-audit.md) | OWASP Top 10 application security audit — secrets, injection, auth, CVEs |
 
-All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~/.claude/commands/` so they're available globally. To add a new command: create a `.md` file in `.claude/commands/`, add it to the loop in `tools/setup-claude.sh`, re-run setup.
+All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~/.claude/commands/` so they're available globally. To add a command: create a `.md` file in `.claude/commands/`, add it to the loop in `tools/setup-claude.sh`, re-run setup.
 
 ## Notes
 
@@ -127,4 +116,4 @@ bash tools/setup-claude.sh
 git config core.hooksPath .github/hooks
 ```
 
-`setup-claude.sh` downloads Claude guidelines and commands into `~/.claude/`. `core.hooksPath` enforces local protection on `main` (no direct commits or pushes).
+`setup-claude.sh` downloads guidelines and commands into `~/.claude/`. `core.hooksPath` enforces local protection on `main` (no direct commits or pushes).
