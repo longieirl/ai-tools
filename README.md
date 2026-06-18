@@ -75,8 +75,9 @@ Slash commands available in any Claude Code session after running `setup-claude.
 | `/update-global-config` | [update-global-config.md](.claude/commands/update-global-config.md) | Update `~/.claude/global-claude.md` with latest behavioral guidelines |
 | `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
 | `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit Claude setup files for dead-weight instructions that produce no observable difference |
+| `/security-audit` | [security-audit.md](.claude/commands/security-audit.md) | OWASP Top 10 application security audit — secrets, injection, auth, CVEs |
 
-All commands live in `.claude/commands/`. `setup-claude.sh` symlinks them into `~/.claude/commands/` so they're available globally. To add a new command: create a `.md` file in `.claude/commands/`, add a `ln -sf` line in `tools/setup-claude.sh`, re-run setup.
+All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~/.claude/commands/` so they're available globally. To add a new command: create a `.md` file in `.claude/commands/`, add it to the loop in `tools/setup-claude.sh`, re-run setup.
 
 ## Notes
 
@@ -112,6 +113,10 @@ All commands live in `.claude/commands/`. `setup-claude.sh` symlinks them into `
 | [playwright](notes/tools/playwright.md) | Browser automation — E2E tests, accessibility, cross-browser, responsive, screenshots |
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
+
+## License
+
+[MIT](LICENSE)
 
 ## Contributing
 

@@ -20,6 +20,19 @@ Before starting, identify:
 - `OWNER` — GitHub username of the repo owner (e.g. `longieirl`)
 - `DEFAULT_BRANCH` — usually `main`
 
+**Do not assume values for these variables. If any are missing, ask before proceeding.**
+
+## Clarifications required before any step executes
+
+Ask the user if not already provided:
+
+1. **License type** — MIT, Apache-2.0, or other? Do not add a LICENSE without confirming. If one already exists, do not overwrite it.
+2. **Project YAML** — Does this repo use YAML for project config (docker-compose, Kubernetes, Ansible, etc.)? This determines whether to add yamllint to CI.
+3. **Docker/containers** — Does this repo contain Dockerfiles or Compose files? This determines whether to add the Docker advisory workflow (Step 10).
+4. **Existing CI** — Are there existing workflows that must be preserved or integrated with?
+
+Surface findings from the pre-flight audit (Step 1) and confirm any non-obvious decisions before making changes.
+
 ---
 
 ## Step 1: Pre-flight Audit
@@ -161,7 +174,7 @@ jobs:
   assign:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@60a0d83039f74b4cbd4b2827b1f7c1a6043aa3c4  # v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         with:
           script: |
             await github.rest.issues.addAssignees({
@@ -316,7 +329,7 @@ echo -e "\n## License\n\n[MIT](LICENSE)" >> README.md
 
 ## Step 8: Repository Security Settings
 
-Enable via GitHub UI (`Settings → Security`) or CLI:
+All settings below are configurable via CLI:
 
 ```bash
 # Enable Dependabot alerts
@@ -325,16 +338,19 @@ gh api repos/REPO/vulnerability-alerts --method PUT
 # Enable Dependabot security updates
 gh api repos/REPO/automated-security-fixes --method PUT
 
-# Enable secret scanning (requires GitHub Advanced Security on public repos — enabled by default)
-# Enable push protection via: Settings → Security → Secret scanning → Push protection
+# Enable secret scanning + push protection
+gh api repos/REPO --method PATCH \
+  --field security_and_analysis='{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}'
 ```
 
-**Via GitHub UI — check all three:**
-1. Settings → Security → Dependabot alerts → Enable
-2. Settings → Security → Dependabot security updates → Enable
-3. Settings → Security → Secret scanning → Enable push protection
+Verify current state:
 
-Code scanning: Settings → Security → Code scanning → Set up → default configuration.
+```bash
+gh api repos/REPO --jq '.security_and_analysis'
+```
+
+**Code scanning** has no REST API for enabling the default configuration — requires GitHub UI:
+Settings → Advanced Security → Code scanning → Set up → Default
 
 ---
 
@@ -344,7 +360,17 @@ Trigger: `pull_request` and `push` to `main`. Fail the PR if any check fails.
 
 ### yamllint configuration
 
-Calibrate rules against the existing repo state first — run yamllint locally, then relax rules until it passes cleanly against all current files before committing. New strictness applies only going forward.
+**First: check if the repo has project YAML files outside `.github/`:**
+
+```bash
+find . -name "*.yml" -o -name "*.yaml" \
+  | grep -v "^./.git/" | grep -v "^./.github/" | head -5
+```
+
+- If results found: add yamllint to CI and create `.yamllint.yml`
+- If empty: skip yamllint — actionlint already covers `.github/workflows/` YAML
+
+If adding yamllint: calibrate rules against the existing repo state first — run yamllint locally, then relax rules until it passes cleanly against all current files before committing. New strictness applies only going forward.
 
 Create `.yamllint.yml`:
 
@@ -387,7 +413,9 @@ actionlint .github/workflows/*.yml
 
 ### CI workflow
 
-Create `.github/workflows/ci.yml`:
+Create `.github/workflows/ci.yml`. Only include the YAML lint step if project YAML files exist outside `.github/` (see check above).
+
+**Base workflow (always):**
 
 ```yaml
 name: CI
@@ -404,23 +432,47 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
-
-      - name: YAML lint
-        run: |
-          pip install yamllint --quiet
-          yamllint -c .yamllint.yml .
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          fetch-depth: 0
 
       - name: Actions lint
-        uses: raven-actions/actionlint@3a0b5a96f5f8e2af9e86e3bb0f8fb55698b91a4f  # v2
+        uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8  # v2
 
       - name: Secrets scan
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # v2
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-**Pin all third-party actions by full commit SHA, not by mutable tag.** The SHAs above are examples — verify current values at time of setup.
+**Add this step only if project YAML exists outside `.github/`:**
+
+```yaml
+      - name: YAML lint
+        run: |
+          pip install yamllint --quiet
+          yamllint -c .yamllint.yml .
+```
+
+If adding the YAML lint step, also create `.yamllint.yml` (see configuration above).
+
+**⚠️ SHA verification required before committing any workflow.**
+
+The SHAs in this document must be verified at setup time — they go stale as actions release new versions. Run this before committing:
+
+```bash
+for ref in "actions/checkout:v4" "actions/github-script:v7" "raven-actions/actionlint:v2" "gitleaks/gitleaks-action:v3"; do
+  repo="${ref%%:*}"; tag="${ref##*:}"
+  result=$(gh api "repos/$repo/git/ref/tags/$tag" --jq '[.object.sha, .object.type] | @tsv')
+  sha=$(echo "$result" | cut -f1); type=$(echo "$result" | cut -f2)
+  if [ "$type" = "tag" ]; then
+    sha=$(gh api "repos/$repo/git/tags/$sha" --jq '.object.sha' 2>/dev/null || echo "$sha")
+  fi
+  echo "$repo@$tag → $sha"
+done
+```
+
+Replace the SHAs in your workflow files with the output before committing.
 
 ### GitHub Actions security rules
 
@@ -471,7 +523,7 @@ jobs:
   advisory:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Scan for risky Docker patterns
         run: |
@@ -593,17 +645,92 @@ actionlint .github/workflows/*.yml
 
 ### Final checklist
 
-- [ ] All workflows validated locally (actionlint + yamllint) before push
+- [ ] All workflows validated locally (actionlint) before push
+- [ ] yamllint step only added to CI if project YAML files exist outside `.github/`
 - [ ] No `${{ }}` expressions interpolated directly into `run:` shell blocks
 - [ ] yamllint passes against existing tree without modifying pre-existing files
 - [ ] LICENSE present and referenced in README
 - [ ] `.gitignore` has no erroneous `!` negations on sensitive file patterns
 - [ ] Sensitive files (`.env`, credentials) confirmed ignored
 - [ ] `main` branch rejects direct push
-- [ ] All CI status checks required before merge (add check names to ruleset after first CI run)
+- [ ] Required status checks wired to ruleset (Step 14 — run after first CI pass)
 - [ ] Dependabot alerts enabled
 - [ ] Secret scanning with push protection enabled
 - [ ] SECURITY.md documents known-accepted risks
+- [ ] Code scanning enabled: Settings → Advanced Security → Code scanning → Set up → Default
+
+---
+
+## Step 14: Wire Required Status Checks
+
+**Run this after the first CI workflow completes successfully on a PR.**
+
+Required status checks cannot be added to the ruleset before the check name exists in GitHub — the check name is only registered after the first run.
+
+```bash
+# Get the ruleset ID
+RULESET_ID=$(gh api repos/REPO/rulesets --jq '.[] | select(.name == "Protect main") | .id')
+
+# Fetch current ruleset rules (needed for full PUT body)
+CURRENT=$(gh api repos/REPO/rulesets/$RULESET_ID)
+
+# Add required_status_checks rule
+gh api repos/REPO/rulesets/$RULESET_ID \
+  --method PUT \
+  --header "Accept: application/vnd.github+json" \
+  --input - <<EOF
+{
+  "name": "Protect main",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ],
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "require_code_owner_review": true,
+        "dismiss_stale_reviews_on_push": true,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "required_status_checks": [
+          { "context": "lint" }
+        ]
+      }
+    }
+  ]
+}
+EOF
+```
+
+If the CI workflow has multiple jobs, add each job name to `required_status_checks`. The `context` value must exactly match the job name in the workflow file.
+
+Verify:
+
+```bash
+gh api repos/REPO/rulesets/$RULESET_ID \
+  --jq '.rules[] | select(.type == "required_status_checks") | .parameters.required_status_checks'
+```
 
 ---
 

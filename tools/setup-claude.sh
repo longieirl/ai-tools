@@ -16,7 +16,7 @@ COMMANDS_DIR="$CLAUDE_DIR/commands"
 mkdir -p "$COMMANDS_DIR"
 
 # Install global commands
-for cmd in sync-ai-config update-global-config github-repo-lockdown setup-dead-weight-audit; do
+for cmd in sync-ai-config update-global-config github-repo-lockdown setup-dead-weight-audit security-audit; do
   curl -fsSL "$BASE/.claude/commands/${cmd}.md" -o "$COMMANDS_DIR/${cmd}.md"
   echo "Installed /${cmd} → $COMMANDS_DIR/${cmd}.md"
 done
@@ -42,4 +42,5 @@ echo "Done. Commands available in any Claude Code project:"
 echo "  /sync-ai-config           — sync project AI config from longieirl/ai-tools"
 echo "  /update-global-config     — update global behavioral guidelines"
 echo "  /github-repo-lockdown     — lock down a public GitHub repo"
-echo "  /setup-dead-weight-audit  — audit Claude setup files for dead-weight"
+echo "  /setup-dead-weight-audit  — audit Claude setup files for dead-weight
+  /security-audit           — OWASP Top 10 security audit for application code"
