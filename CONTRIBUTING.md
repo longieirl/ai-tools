@@ -25,6 +25,8 @@ actionlint .github/workflows/*.yml
   personal environment paths in any committed file.
 - Match existing code style and naming conventions.
 - External contributors cannot merge — all PRs require owner review.
+- All PRs merge via squash commit only — no merge commits, no rebase merge.
+- Do not use self-hosted runners in any workflow triggered by pull requests from untrusted contributors. GitHub warns that self-hosted runners on public repos can be compromised by malicious PR code.
 
 ## Git hooks
 
