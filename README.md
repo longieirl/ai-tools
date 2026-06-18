@@ -113,6 +113,10 @@ All commands live in `.claude/commands/`. `setup-claude.sh` symlinks them into `
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
 
+## License
+
+[MIT](LICENSE)
+
 ## Contributing
 
 After cloning, run setup:
