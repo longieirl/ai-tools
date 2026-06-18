@@ -17,6 +17,11 @@ jobs:
           fetch-depth: 0  # gitleaks scans the full commit range; required for PR diff scan
           persist-credentials: false
 
+      - name: YAML lint
+        run: |
+          pip install yamllint --quiet
+          yamllint .github/
+
       - name: Actions lint
         uses: raven-actions/actionlint@205b530c5d9fa8f44ae9ed59f341a0db994aa6f8  # v2
 
