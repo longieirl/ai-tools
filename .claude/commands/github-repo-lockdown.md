@@ -546,6 +546,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+**False positives:** If the repo contains documentation with example API key values (e.g. command/skill `.md` files), gitleaks will flag them as `generic-api-key`. Suppress with a `.gitleaks.toml` in the repo root:
+
+```toml
+title = "Gitleaks config"
+
+[allowlist]
+description = "Allowlist example/placeholder values in documentation"
+paths = [
+  '''docs/.*\.md''',
+  '''.claude/commands/.*\.md''',
+]
+```
+
+Scope the paths to only the directories that contain documentation — do not use a blanket `.*\.md` allowlist as it would suppress real findings in source files.
+
 **Add this step before Actions lint. Scope the path based on where YAML lives:**
 
 ```yaml
