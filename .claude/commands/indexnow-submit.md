@@ -2,32 +2,63 @@ Submit URLs to search engines via IndexNow protocol.
 
 ## What you need
 
-- **key**: your IndexNow API key (e.g. `f630052f1cd74d2c98bf335ee0fa895d`)
+- **key**: your IndexNow API key (e.g. `abc123`)
 - **host**: your domain (e.g. `www.example.com`)
-- **keyLocation**: full URL to your hosted key file (e.g. `https://www.example.com/f630052f1cd74d2c98bf335ee0fa895d.txt`)
+- **keyLocation**: full URL to your hosted key file (e.g. `https://www.example.com/abc123.txt`)
 - **urlList**: one or more URLs on that host to submit
 
 ## Step 1 — Verify key file is live
 
-Before submitting, confirm the key file exists and returns the correct key:
+Check HTTP status, content, and absence of redirects or HTML wrapping:
 
 ```bash
-curl -fsSL https://www.example.com/f630052f1cd74d2c98bf335ee0fa895d.txt
+curl -i https://www.example.com/abc123.txt
 ```
 
-Expected output: the key value exactly, e.g. `f630052f1cd74d2c98bf335ee0fa895d`
+Validate all of the following before proceeding:
 
-If the file is missing or returns wrong content, do not proceed — fix the key file first.
+- Response is `HTTP 200`
+- Body contains the key value exactly (e.g. `abc123`) — no HTML, no whitespace padding
+- No redirect chain (CDN or proxy misconfiguration can cause 403 even when URL appears reachable)
 
-## Step 2 — Submit URLs
+If any check fails, fix the key file before proceeding.
+
+## Step 2 — Validate URLs before submission
+
+For each URL you intend to submit, confirm it is indexable:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.indexnow.org/IndexNow" \
+curl -I https://www.example.com/page-1
+```
+
+Check:
+
+- `HTTP 200` (not 3xx, 4xx, 5xx)
+- Not blocked by `robots.txt`
+- Canonical URL matches the submitted URL
+- Page is not marked `noindex`
+
+Submitting non-indexable URLs wastes quota and creates confusing diagnostics.
+
+## Step 3 — Single URL (GET, simpler)
+
+For one URL, use the GET endpoint:
+
+```bash
+curl "https://api.indexnow.org/indexnow?url=https://www.example.com/page-1&key=abc123"
+```
+
+## Step 4 — Bulk submission (POST, preferred)
+
+For multiple URLs, use the JSON POST endpoint:
+
+```bash
+curl -s -w "\nHTTP %{http_code}\n" -X POST "https://api.indexnow.org/IndexNow" \
   -H "Content-Type: application/json; charset=utf-8" \
   -d '{
     "host": "www.example.com",
-    "key": "f630052f1cd74d2c98bf335ee0fa895d",
-    "keyLocation": "https://www.example.com/f630052f1cd74d2c98bf335ee0fa895d.txt",
+    "key": "abc123",
+    "keyLocation": "https://www.example.com/abc123.txt",
     "urlList": [
       "https://www.example.com/",
       "https://www.example.com/page-1",
@@ -36,42 +67,34 @@ curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.indexnow.org/IndexNo
   }'
 ```
 
-## Step 3 — Interpret response
+Expected: `HTTP 200` (empty body is normal — see Step 5).
+
+## Step 5 — Interpret response
 
 | Code | Meaning |
 |------|---------|
-| 200  | Accepted |
-| 400  | Bad request — check JSON format |
-| 403  | Key invalid or key file not accessible |
-| 422  | URLs don't match declared host |
-| 429  | Rate limited — retry later |
+| 200  | Accepted for processing. Crawling and indexing are not guaranteed. |
+| 400  | Invalid request payload — check JSON format |
+| 403  | Key validation failed — verify key file content and accessibility |
+| 422  | Host, key location, or URL mismatch — all URLs must belong to declared host |
+| 429  | Rate limit exceeded — back off and retry |
+| 5xx  | Temporary IndexNow service issue — retry after several minutes |
 
-## Step 4 — Confirm submission accepted
+## Step 6 — Retry strategy
 
-Re-run with full response output to verify no silent errors:
+| Code | Action |
+|------|--------|
+| 429  | Exponential backoff |
+| 5xx  | Retry after several minutes |
+| 403  | Verify key file is reachable and content matches key exactly |
+| 422  | Verify host field and all URLs share the same origin |
 
-```bash
-curl -s -w "\nHTTP %{http_code}\n" -X POST "https://api.indexnow.org/IndexNow" \
-  -H "Content-Type: application/json; charset=utf-8" \
-  -d '{
-    "host": "www.example.com",
-    "key": "f630052f1cd74d2c98bf335ee0fa895d",
-    "keyLocation": "https://www.example.com/f630052f1cd74d2c98bf335ee0fa895d.txt",
-    "urlList": [
-      "https://www.example.com/"
-    ]
-  }'
-```
-
-Expected: `HTTP 200` (body is empty on success — that is normal).
-
-## Step 5 — Verify indexing in Bing
-
-Check Bing has received and processed the URL:
+## Step 7 — Verify in Bing
 
 1. Go to `https://www.bing.com/webmaster/` → URL Inspection tool
 2. Paste submitted URL and run inspection
-3. Status should show "URL is on Bing" or "Submitted for crawling" within 24–48 hours
+
+Bing may show the URL as discovered, submitted, crawled, or indexed. Timing varies based on site authority, crawl budget, and page quality — do not expect a specific status within any fixed window.
 
 Alternatively, search Bing directly:
 
@@ -79,20 +102,19 @@ Alternatively, search Bing directly:
 site:www.example.com/page-1
 ```
 
-If the page appears in results, indexing succeeded.
-
-## Step 6 — Check Bing Webmaster Tools (optional but recommended)
+## Step 8 — Check Bing Webmaster Tools submission history
 
 1. Log in at `https://www.bing.com/webmaster/`
-2. Select your site → **URL submission** → **IndexNow**
-3. Confirm submitted URLs appear in the submission history
+2. Navigate to **URL Submission** or **IndexNow** reporting (UI layout changes occasionally — look for either label)
+3. Confirm submitted URLs appear in submission history
 
-If URLs are absent after 24 hours, re-submit and check for `403`/`422` errors.
+If URLs are absent after 24 hours, re-submit and check for `403`/`422` responses.
 
 ## Notes
 
 - Submit up to 10,000 URLs per request
+- All URLs in a request must belong to the same verified host declared in `host`
 - Key file must be UTF-8 encoded
 - `keyLocation` is optional if the file is at `https://{host}/{key}.txt` (the default path)
 - IndexNow propagates to Bing, Yandex, and other participating engines automatically
-- `200` response means the API accepted the request, not that the page is indexed — use Step 5 to confirm indexing
+- `200` means the API accepted the request — crawling and indexing are not guaranteed
