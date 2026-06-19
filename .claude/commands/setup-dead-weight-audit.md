@@ -21,6 +21,14 @@ For each flagged item:
 
 Prefer safe cleanup over aggressive minimization. Do not remove anything unless the reason is concrete.
 
+## Burden of Proof
+
+Do not classify an item as dead weight unless there is positive evidence it produces no meaningful behavioral or mechanical effect.
+
+Absence of evidence is not evidence of dead weight.
+
+When uncertain, classify as Keep or Verify manually. Do not speculate.
+
 ## Files to Audit
 
 Check all of these:
@@ -57,6 +65,8 @@ A typical software task includes:
 
 Do not evaluate against rare or unrelated tasks unless the setup clearly indicates they are important.
 
+An instruction should not be considered dead weight solely because it applies to maintenance, security, documentation, onboarding, or repository governance. Infrequent does not mean unnecessary.
+
 ## Unit of Evaluation
 
 Treat a discrete instruction as the smallest standalone rule, config entry, permission, hook, env var, or behavioral constraint that could be removed independently without breaking the surrounding text.
@@ -82,6 +92,40 @@ Flag an item as dead weight if one or more of these are true:
 - It describes intent but does not change model behavior or tool behavior
 
 Flag rarity-based dead weight only when there is evidence in the setup that the use case is not used, or when the item is clearly unrelated to the typical task definition.
+
+## Verifiability Check
+
+Before marking anything as unused, determine whether usage can actually be verified from the available files.
+
+If usage cannot be verified from the files you can read (e.g., a hook references an external script, an env var is consumed by a tool, a skill may be invoked from other sessions), mark the item as:
+
+```text
+STATUS: Unverifiable
+```
+
+Do not classify an item as dead weight solely because its usage cannot be proven. Unverifiable is a finding, not a verdict.
+
+## Conflict Detection
+
+After identifying individual items, scan for conflicting instructions: two or more instructions that impose different requirements on the same behavior.
+
+For each conflict:
+
+- Flag both instructions
+- Identify which is likely dominant (more specific, later in load order, or in a lower-level file)
+- Recommend consolidation
+
+Conflicts are often more harmful than dead weight. Flag them even if neither instruction is dead weight on its own.
+
+## Duplicate and Hierarchy Analysis
+
+When evaluating apparent duplicates, distinguish between:
+
+- **Exact duplicate**: Identical meaning, identical effect — safe to remove one
+- **Partial overlap**: Shared coverage but each adds something — consolidate, do not blindly remove
+- **Parent-child**: One instruction is a general rule; the other is a specific sub-case — do not remove the parent solely because a child exists unless the parent provides no additional behavioral coverage
+
+Removing a parent instruction that still provides behavioral coverage the child does not replicate is a false-positive removal.
 
 ## Do Not Flag
 
@@ -113,6 +157,14 @@ Only flag them if there is concrete evidence that they are:
 
 Do not flag a hook simply because it does not affect Claude's writing style. Hooks can have valid mechanical effects.
 
+## Validation Pass
+
+Before producing output, review every proposed removal and ask:
+
+> "If this item were removed and the user later noticed a change, what would that change be?"
+
+If a plausible change exists — however unlikely — downgrade confidence or mark `Verify manually`. This pass runs after evaluation, before writing Section 1 output.
+
 ## Confidence Levels
 
 For every flagged item, assign one of these confidence levels:
@@ -134,11 +186,13 @@ For each flagged item:
 ```text
 FILE: path/to/file
 LINE/SECTION: [line number or nearest section heading]
-TYPE: [behavioral instruction | duplicate | inactive config | comment | env var | permission | hook | other config]
+TYPE: [duplicate | exact-duplicate | overlap | conflict | inactive config | comment | env var | permission | hook | other config | unverifiable | default restatement | security control | workflow constraint]
 CONTENT: "[exact text if possible, otherwise precise paraphrase]"
 REASON: [one sentence explaining why this changes nothing]
 CONFIDENCE: [High | Medium | Low]
 ACTION: [Remove | Consolidate | Keep but move | Verify manually]
+TOKEN REDUCTION: [Low | Medium | High]
+BEHAVIORAL RISK: [Low | Medium | High]
 ```
 
 For each item reviewed and explicitly kept:
@@ -152,15 +206,19 @@ KEEP REASON: [one sentence explaining the specific behavior, edge case, security
 
 ### Section 2: Cleaned-Up Versions
 
-For every file that had something flagged: show the full cleaned-up version with dead weight removed. No partial diffs — show the whole file so it is ready to paste in.
+For every file that had something flagged:
+
+- If the file is under 200 lines: show the full cleaned-up version, ready to paste in.
+- If the file exceeds 200 lines: show a unified diff. Provide the full rewrite only if explicitly requested.
 
 Mark any `Low` confidence items with a `<!-- Verify manually: [reason] -->` comment rather than removing them.
 
 ### Section 3: Summary
 
 - Total instructions audited
-- Total flagged
+- Total flagged (broken down by type where notable)
 - Estimated reduction (lines or %)
 - Any patterns noticed (e.g., "3 of 5 flagged items are restatements of defaults")
+- Top priority removals: items with High token reduction + Low behavioral risk
 
 Tell the user: Run this audit against your global `~/.claude/` setup first. Review all `Verify manually` items before deleting any setup content.
