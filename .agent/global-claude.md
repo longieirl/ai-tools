@@ -49,3 +49,22 @@ For multi-step tasks, state a brief plan:
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
+
+# Context Front-Loading
+
+Before starting a task, identify what information would reduce back-and-forth.
+If a requirement is ambiguous, ask one clarifying question rather than assuming.
+
+# Model Selection
+
+Match model to task at session start — changing mid-session busts the prompt cache.
+
+- Haiku: git ops, simple lookups, reformatting, summarising
+- Sonnet: standard implementation, PR review, debugging, code generation
+- Top tier (Opus/Fable): architecture decisions, security review, novel problems
+
+# Session Lifecycle
+
+Start a fresh session for each distinct task. When a session exceeds ~50 turns or
+response quality degrades, write a brief handoff note and /clear. Don't use /compact
+as a substitute — it's lossy and itself burns tokens.
