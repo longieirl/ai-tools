@@ -91,6 +91,7 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [github:secure-repo](notes/skills/github-secure-repo.md) | Guided GitHub repo security hardening — rulesets, CODEOWNERS, access controls | Marketplace plugin | `/plugin update` |
 | [gsd:progress](notes/skills/gsd-progress.md) | GSD Redux — auto-detect and run next step in the plan→execute→verify→ship loop | Local install | `npx @opengsd/get-shit-done-redux@latest` |
 | [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules | Marketplace plugin | `/plugin update` |
+| [ralph-wiggum](notes/skills/ralph-wiggum.md) | Iterative AI development loops — same prompt fed repeatedly so Claude builds on its own previous work | Marketplace plugin (`claude-code-plugins`) | `/plugin update` |
 
 ### MCP Servers
 
@@ -111,6 +112,7 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [playwright](notes/tools/playwright.md) | Browser automation — E2E tests, accessibility, cross-browser, responsive, screenshots |
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
+| [OpenSpec](https://openspec.dev/) | Spec-driven feature planning — generates proposal docs, design decisions, and tasks that persist alongside code across sessions and agents |
 
 ## Contributing
 

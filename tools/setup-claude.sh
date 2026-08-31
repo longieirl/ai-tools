@@ -15,13 +15,19 @@ CLAUDE_DIR="$HOME/.claude"
 COMMANDS_DIR="$CLAUDE_DIR/commands"
 mkdir -p "$COMMANDS_DIR"
 
+backup_if_exists() {
+  [ -f "$1" ] && cp "$1" "$1.bak" && echo "Backed up $1 → $1.bak"
+}
+
 # Install global commands
 for cmd in sync-ai-config update-global-config update-all github-repo-lockdown setup-dead-weight-audit security-audit; do
+  backup_if_exists "$COMMANDS_DIR/${cmd}.md"
   curl -fsSL "$BASE/.claude/commands/${cmd}.md" -o "$COMMANDS_DIR/${cmd}.md"
   echo "Installed /${cmd} → $COMMANDS_DIR/${cmd}.md"
 done
 
 # Install global-claude.md
+backup_if_exists "$CLAUDE_DIR/global-claude.md"
 curl -fsSL "$BASE/.agent/global-claude.md" -o "$CLAUDE_DIR/global-claude.md"
 echo "Installed ~/.claude/global-claude.md"
 
