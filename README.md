@@ -60,6 +60,7 @@ Slash commands available in any Claude Code session after running `setup-claude.
 
 | Command | File | Description |
 |---------|------|-------------|
+| `/update-all` | [update-all.md](.claude/commands/update-all.md) | Update everything — global commands, behavioral guidelines, marketplace plugins, and local-install skills |
 | `/sync-ai-config` | [sync-ai-config.md](.claude/commands/sync-ai-config.md) | Sync this project's AI config files from the upstream repo |
 | `/update-global-config` | [update-global-config.md](.claude/commands/update-global-config.md) | Update `~/.claude/global-claude.md` with latest behavioral guidelines |
 | `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
@@ -72,16 +73,25 @@ All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~
 
 ### Skills
 
-| File | Description |
-|------|-------------|
-| [impeccable](notes/skills/impeccable.md) | Production-grade frontend interface design — craft, audit, animate, polish |
-| [taste-skill](notes/skills/taste-skill.md) | Metric-based UI/UX engineering — React/Next.js, Tailwind, Framer Motion, no AI-slop |
-| [emil-design-eng](notes/skills/emil-design-eng.md) | Design engineering review — Before/After/Why format, animation framework, CSS mastery |
-| [ui-ux-pro-max](notes/skills/ui-ux-pro-max.md) | Design intelligence database — 67 styles, 96 palettes, 57 font pairings, 25 chart types |
-| [update-config](notes/skills/update-config.md) | Configure Claude Code settings.json — permissions, hooks, env vars, MCP servers |
-| [github:secure-repo](notes/skills/github-secure-repo.md) | Guided GitHub repo security hardening — rulesets, CODEOWNERS, access controls |
-| [gsd:progress](notes/skills/gsd-progress.md) | GSD Redux — auto-detect and run next step in the plan→execute→verify→ship loop |
-| [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules |
+Skills come in three types with different update paths:
+
+- **Built-in** — shipped with Claude Code or Superpowers; updated automatically
+- **Marketplace plugin** — declared in `enabledPlugins`; update via `/plugin update` in any Claude Code session
+- **Local install** — cloned or npx-installed into `.claude/skills/`; update by re-running the install command
+
+If you copy-paste a skill's `.md` file directly into your project, you own that file. It becomes a fork — no auto-update. Track the upstream source URL in the skill's frontmatter and re-paste manually when you want changes.
+
+| File | Description | Type | Update |
+|------|-------------|------|--------|
+| [impeccable](notes/skills/impeccable.md) | Production-grade frontend interface design — craft, audit, animate, polish | Local install | `npx impeccable@latest install` |
+| [taste-skill](notes/skills/taste-skill.md) | Metric-based UI/UX engineering — React/Next.js, Tailwind, Framer Motion, no AI-slop | Local install | Re-clone from source |
+| [emil-design-eng](notes/skills/emil-design-eng.md) | Design engineering review — Before/After/Why format, animation framework, CSS mastery | Local install | Re-clone from source |
+| [ui-ux-pro-max](notes/skills/ui-ux-pro-max.md) | Design intelligence database — 67 styles, 96 palettes, 57 font pairings, 25 chart types | Marketplace plugin | `/plugin update` |
+| [update-config](notes/skills/update-config.md) | Configure Claude Code settings.json — permissions, hooks, env vars, MCP servers | Built-in | Auto (with Claude Code) |
+| [github:secure-repo](notes/skills/github-secure-repo.md) | Guided GitHub repo security hardening — rulesets, CODEOWNERS, access controls | Marketplace plugin | `/plugin update` |
+| [gsd:progress](notes/skills/gsd-progress.md) | GSD Redux — auto-detect and run next step in the plan→execute→verify→ship loop | Local install | `npx @opengsd/get-shit-done-redux@latest` |
+| [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules | Marketplace plugin | `/plugin update` |
+| [ralph-wiggum](notes/skills/ralph-wiggum.md) | Iterative AI development loops — same prompt fed repeatedly so Claude builds on its own previous work | Marketplace plugin (`claude-code-plugins`) | `/plugin update` |
 
 ### MCP Servers
 
@@ -102,10 +112,7 @@ All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~
 | [playwright](notes/tools/playwright.md) | Browser automation — E2E tests, accessibility, cross-browser, responsive, screenshots |
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
-
-## License
-
-[MIT](LICENSE)
+| [OpenSpec](https://openspec.dev/) | Spec-driven feature planning — generates proposal docs, design decisions, and tasks that persist alongside code across sessions and agents |
 
 ## Contributing
 
@@ -115,5 +122,9 @@ After cloning, run setup:
 bash tools/setup-claude.sh
 git config core.hooksPath .github/hooks
 ```
+
+## License
+
+[MIT](LICENSE)
 
 `setup-claude.sh` downloads guidelines and commands into `~/.claude/`. `core.hooksPath` enforces local protection on `main` (no direct commits or pushes).
