@@ -14,7 +14,7 @@ Ask if not already provided:
 
 1. **Domain** — which domain to audit (e.g. `example.ie`)
 2. **Repo** — which GitHub repo to file the issue against (owner/repo format)
-3. **Hosting** — cPanel, Cloudflare, AWS Route53, other? (affects DKIM setup instructions)
+3. **Hosting** — DirectAdmin, cPanel, Cloudflare, AWS Route53, other? (affects DKIM setup instructions)
 4. **Email provider** — cPanel mail only, Google Workspace, Microsoft 365, other? (determines DKIM sources)
 
 ---
@@ -100,11 +100,19 @@ Do this after DKIM is confirmed working.
 
 ### DKIM setup
 
+**DirectAdmin hosting (server-generated mail):**
+Email → DKIM Keys → enable for domain. DirectAdmin generates the key pair. Note selector name then verify:
+```bash
+dig <selector>._domainkey.DOMAIN TXT +short
+```
+⚠️ If DNS is managed externally (nameservers not at the same host), DirectAdmin enables signing but cannot auto-publish the TXT record. Go to Email → DKIM Keys → View public key, copy the full TXT value, then add it manually in your external DNS control panel as `<selector>._domainkey.DOMAIN`.
+
 **cPanel hosting (server-generated mail):**
 Mail → Email Deliverability → Enable DKIM. cPanel auto-generates key and publishes TXT. Note selector name then verify:
 ```bash
 dig <selector>._domainkey.DOMAIN TXT +short
 ```
+⚠️ Same external DNS caveat applies as DirectAdmin above.
 
 **Google Workspace:**
 Google Admin → Apps → Google Workspace → Gmail → Authenticate email → Generate new record. Publish TXT in DNS.
