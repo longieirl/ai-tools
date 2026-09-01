@@ -14,7 +14,7 @@ Ask if not already provided:
 
 1. **Domain** — which domain to audit (e.g. `example.ie`)
 2. **Repo** — which GitHub repo to file the issue against (owner/repo format)
-3. **Hosting** — DirectAdmin, cPanel, Cloudflare, AWS Route53, other? (affects DKIM setup instructions)
+3. **Hosting** — which control panel manages DNS and email? (DirectAdmin, cPanel, Cloudflare, AWS Route53, other?) Default: DirectAdmin if not specified. Affects DKIM setup instructions.
 4. **Email provider** — cPanel mail only, Google Workspace, Microsoft 365, other? (determines DKIM sources)
 
 ---
