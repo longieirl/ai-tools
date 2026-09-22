@@ -66,6 +66,7 @@ Slash commands available in any Claude Code session after running `setup-claude.
 | `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
 | `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit AI setup files for dead-weight instructions that produce no observable difference |
 | `/security-audit` | [security-audit.md](.claude/commands/security-audit.md) | OWASP Top 10 application security audit — secrets, injection, auth, CVEs |
+| `/dns-audit` | [dns-audit.md](.claude/commands/dns-audit.md) | DNS and email security audit — DKIM, DMARC, SPF, CAA, MTA-STS across hosting panels |
 
 All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~/.claude/commands/` so they're available globally. To add a command: create a `.md` file in `.claude/commands/`, add it to the loop in `tools/setup-claude.sh`, re-run setup.
 
@@ -107,6 +108,7 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | File | Description |
 |------|-------------|
 | [rtk-token-saving.md](notes/rtk-token-saving.md) | RTK (Rust Token Killer) — CLI proxy that cuts shell-command tokens 60–90% before they hit LLM context |
+| [dns-email-security.md](notes/dns-email-security.md) | DNS email security records — DKIM, DMARC, CAA, MTA-STS, TLS-RPT — why each matters and how to implement them |
 | [github-repo-standards.md](notes/github-repo-standards.md) | Non-negotiable GitHub repo standards — PR auto-assign, branch auto-delete, lean workflow output |
 | [gsd](notes/tools/gsd.md) | Get Shit Done Redux — spec-driven dev system that solves context rot with parallel subagent execution |
 | [playwright](notes/tools/playwright.md) | Browser automation — E2E tests, accessibility, cross-browser, responsive, screenshots |
