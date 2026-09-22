@@ -93,6 +93,7 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [gsd:progress](notes/skills/gsd-progress.md) | GSD Redux — auto-detect and run next step in the plan→execute→verify→ship loop | Local install | `npx @opengsd/get-shit-done-redux@latest` |
 | [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules | Marketplace plugin | `/plugin update` |
 | [ralph-wiggum](notes/skills/ralph-wiggum.md) | Iterative AI development loops — same prompt fed repeatedly so Claude builds on its own previous work | Marketplace plugin (`claude-code-plugins`) | `/plugin update` |
+| [mattpocock-skills](notes/skills/mattpocock-skills.md) | Engineering and productivity skills — TDD, code review, grilling, domain modelling, spec/ticket flows, and more | Marketplace plugin | `/plugin update` |
 
 ### MCP Servers
 
