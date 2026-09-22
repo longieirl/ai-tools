@@ -10,26 +10,6 @@ The final objective is to maximise useful development work per token while maint
 
 I use Claude Code daily as a senior developer and my company has introduced a daily token consumption limit.
 
-## Known locations
-
-The canonical global configuration is:
-
-`dotfiles/claude/global-claude.md`
-
-There is also:
-
-`dotfiles/.agent/global-claude.md`
-
-These may have diverged. Determine their relationship and which configuration Claude Code actually uses.
-
-My Claude Code historical data is located under:
-
-`$HOME/.claude`
-
-Do not assume the directory structure. Discover the available data and determine what can actually be analysed.
-
-Do not spend tool calls rediscovering the known configuration locations above.
-
 ## Phase 1: Establish the evidence base
 
 First determine:
