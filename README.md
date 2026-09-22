@@ -66,6 +66,7 @@ Slash commands available in any Claude Code session after running `setup-claude.
 | `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
 | `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit AI setup files for dead-weight instructions that produce no observable difference |
 | `/security-audit` | [security-audit.md](.claude/commands/security-audit.md) | OWASP Top 10 application security audit — secrets, injection, auth, CVEs |
+| `/claude-config-audit` | [claude-config-audit.md](.claude/commands/claude-config-audit.md) | Evidence-driven audit of Claude Code global configuration and skills — produces an HTML report with token efficiency and configuration recommendations |
 
 All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~/.claude/commands/` so they're available globally. To add a command: create a `.md` file in `.claude/commands/`, add it to the loop in `tools/setup-claude.sh`, re-run setup.
 
