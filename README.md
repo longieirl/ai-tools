@@ -66,6 +66,7 @@ Slash commands available in any Claude Code session after running `setup-claude.
 | `/github-repo-lockdown` | [github-repo-lockdown.md](.claude/commands/github-repo-lockdown.md) | Lock down a public GitHub repo — rulesets, CODEOWNERS, CI validation, security hardening |
 | `/setup-dead-weight-audit` | [setup-dead-weight-audit.md](.claude/commands/setup-dead-weight-audit.md) | Audit AI setup files for dead-weight instructions that produce no observable difference |
 | `/security-audit` | [security-audit.md](.claude/commands/security-audit.md) | OWASP Top 10 application security audit — secrets, injection, auth, CVEs |
+| `/claude-config-audit` | [claude-config-audit.md](.claude/commands/claude-config-audit.md) | Evidence-driven audit of Claude Code global configuration and skills — produces an HTML report with token efficiency and configuration recommendations |
 | `/dns-audit` | [dns-audit.md](.claude/commands/dns-audit.md) | DNS and email security audit — DKIM, DMARC, SPF, CAA, MTA-STS across hosting panels |
 
 All commands live in `.claude/commands/`. `setup-claude.sh` downloads them to `~/.claude/commands/` so they're available globally. To add a command: create a `.md` file in `.claude/commands/`, add it to the loop in `tools/setup-claude.sh`, re-run setup.
@@ -93,6 +94,7 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [gsd:progress](notes/skills/gsd-progress.md) | GSD Redux — auto-detect and run next step in the plan→execute→verify→ship loop | Local install | `npx @opengsd/get-shit-done-redux@latest` |
 | [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules | Marketplace plugin | `/plugin update` |
 | [ralph-wiggum](notes/skills/ralph-wiggum.md) | Iterative AI development loops — same prompt fed repeatedly so Claude builds on its own previous work | Marketplace plugin (`claude-code-plugins`) | `/plugin update` |
+| [mattpocock-skills](notes/skills/mattpocock-skills.md) | Engineering and productivity skills — TDD, code review, grilling, domain modelling, spec/ticket flows, and more | Marketplace plugin | `/plugin update` |
 
 ### MCP Servers
 
@@ -115,6 +117,13 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
 | [OpenSpec](https://openspec.dev/) | Spec-driven feature planning — generates proposal docs, design decisions, and tasks that persist alongside code across sessions and agents |
+
+### Videos
+
+| Title | Description |
+|-------|-------------|
+| [Building Great Agent Skills: The Missing Manual](https://www.youtube.com/watch?v=UNzCG3lw6O0) | How to author high-quality agent skills for Claude Code |
+| [Simon Scrapes](https://www.youtube.com/watch?v=e7TY56-yIvM) | TBD |
 
 ## Contributing
 
