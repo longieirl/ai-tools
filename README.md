@@ -116,6 +116,13 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
 | [OpenSpec](https://openspec.dev/) | Spec-driven feature planning — generates proposal docs, design decisions, and tasks that persist alongside code across sessions and agents |
 
+### Videos
+
+| Title | Description |
+|-------|-------------|
+| [Building Great Agent Skills: The Missing Manual](https://www.youtube.com/watch?v=UNzCG3lw6O0) | How to author high-quality agent skills for Claude Code |
+| [Simon Scrapes](https://www.youtube.com/watch?v=e7TY56-yIvM) | TBD |
+
 ## Contributing
 
 After cloning, run setup:
