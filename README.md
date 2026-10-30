@@ -83,24 +83,28 @@ Skills come in three types with different update paths:
 
 If you copy-paste a skill's `.md` file directly into your project, you own that file. It becomes a fork — no auto-update. Track the upstream source URL in the skill's frontmatter and re-paste manually when you want changes.
 
-| File | Description | Type | Update |
-|------|-------------|------|--------|
+| File | Description | Type | Install |
+|------|-------------|------|---------|
 | [impeccable](notes/skills/impeccable.md) | Production-grade frontend interface design — craft, audit, animate, polish | Local install | `npx impeccable@latest install` |
-| [taste-skill](notes/skills/taste-skill.md) | Metric-based UI/UX engineering — React/Next.js, Tailwind, Framer Motion, no AI-slop | Local install | Re-clone from source |
-| [emil-design-eng](notes/skills/emil-design-eng.md) | Design engineering review — Before/After/Why format, animation framework, CSS mastery | Local install | Re-clone from source |
-| [ui-ux-pro-max](notes/skills/ui-ux-pro-max.md) | Design intelligence database — 67 styles, 96 palettes, 57 font pairings, 25 chart types | Marketplace plugin | `/plugin update` |
-| [update-config](notes/skills/update-config.md) | Configure Claude Code settings.json — permissions, hooks, env vars, MCP servers | Built-in | Auto (with Claude Code) |
-| [github:secure-repo](notes/skills/github-secure-repo.md) | Guided GitHub repo security hardening — rulesets, CODEOWNERS, access controls | Marketplace plugin | `/plugin update` |
+| [taste-skill](notes/skills/taste-skill.md) | Metric-based UI/UX engineering — React/Next.js, Tailwind, Framer Motion, no AI-slop | Local install | `npx skills add https://github.com/Leonxlnx/taste-skill` |
+| [web-interface-guidelines](notes/skills/web-interface-guidelines.md) | Vercel's rule set — audit UI for interaction, accessibility, typography, layout before shipping | Local install | `git clone https://github.com/vercel-labs/web-interface-guidelines` |
+| [emil-design-eng](notes/skills/emil-design-eng.md) | Design engineering review — Before/After/Why format, animation framework, CSS mastery | Local install | `npx skills add emilkowalski/skills` |
+| [apple-design](notes/skills/apple-design.md) | Apple-style fluid motion — interruptible springs, direct manipulation, materials, typography, accessibility | Local install | `npx skills add emilkowalski/skills` |
+| [ui-ux-pro-max](notes/skills/ui-ux-pro-max.md) | Design intelligence database — 67 styles, 96 palettes, 57 font pairings, 25 chart types | Local install | `npm i -g uipro-cli && uipro init --ai claude` |
+| [update-config](notes/skills/update-config.md) | Configure Claude Code settings.json — permissions, hooks, env vars, MCP servers | Built-in | — |
+| [github:secure-repo](notes/skills/github-secure-repo.md) | Guided GitHub repo security hardening — rulesets, CODEOWNERS, access controls | In-repo skill | — |
 | [gsd:progress](notes/skills/gsd-progress.md) | GSD Redux — auto-detect and run next step in the plan→execute→verify→ship loop | Local install | `npx @opengsd/get-shit-done-redux@latest` |
-| [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules | Marketplace plugin | `/plugin update` |
-| [ralph-wiggum](notes/skills/ralph-wiggum.md) | Iterative AI development loops — same prompt fed repeatedly so Claude builds on its own previous work | Marketplace plugin (`claude-code-plugins`) | `/plugin update` |
-| [mattpocock-skills](notes/skills/mattpocock-skills.md) | Engineering and productivity skills — TDD, code review, grilling, domain modelling, spec/ticket flows, and more | Marketplace plugin | `/plugin update` |
+| [static-analysis:semgrep](notes/skills/semgrep.md) | Semgrep static analysis — security vulnerabilities, OWASP, custom rules | Marketplace plugin | `/plugin install static-analysis@trailofbits` |
+| [ralph-wiggum](notes/skills/ralph-wiggum.md) | Iterative AI development loops — same prompt fed repeatedly so Claude builds on its own previous work | Marketplace plugin | `/plugin install ralph-wiggum@claude-code-plugins` |
+| [mattpocock-skills](notes/skills/mattpocock-skills.md) | Engineering and productivity skills — TDD, code review, grilling, domain modelling, spec/ticket flows, and more | Marketplace plugin | `/plugin install mattpocock-skills` |
+| [vercel-labs/agent-skills](notes/skills/vercel-agent-skills.md) | Vercel's official agent-skills collection — installed via the skills.sh CLI | Local install | `npx skills add vercel-labs/agent-skills` |
 
 ### MCP Servers
 
 | File | Description |
 |------|-------------|
 | [shadcn](notes/mcp/shadcn.md) | shadcn/ui MCP — install components, browse registry, query docs |
+| [magic (21st.dev)](notes/mcp/magic-mcp.md) | 21st.dev Magic MCP — search and insert 10,000+ React/Tailwind UI components |
 | [github](notes/mcp/github.md) | GitHub API MCP — PRs, issues, file read/write, repo search |
 | [context7](notes/mcp/context7.md) | Live library documentation — current API docs and code examples for any package |
 | [ide-diagnostics](notes/mcp/ide-diagnostics.md) | IDE diagnostics MCP — TypeScript errors, lint warnings via language server |

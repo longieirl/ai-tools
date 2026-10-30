@@ -10,7 +10,9 @@ Design and iterate production-grade frontend interfaces with committed, opiniona
 
 - **Type**: Claude Code skill
 - **Invocation**: `Skill(impeccable)` or `npx impeccable <subcommand>`
-- **Source**: Installed via `npx impeccable` or cloned into `.claude/skills/impeccable/`
+- **Source**: https://github.com/pbakaus/impeccable (https://impeccable.style)
+- **Releases**: https://github.com/pbakaus/impeccable/releases
+- **Install**: `npx impeccable@latest` (or `npx impeccable install`)
 
 ## What It Does
 

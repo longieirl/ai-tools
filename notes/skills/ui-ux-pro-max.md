@@ -10,7 +10,9 @@ Comprehensive design intelligence database. Generates complete design systems wi
 
 - **Type**: Claude Code plugin (`ui-ux-pro-max@ui-ux-pro-max-skill`) or CLI (`npx uipro-cli`)
 - **Invocation**: Via `Skill(ui-ux-pro-max)` or `python3 search.py <query> --design-system`
-- **Source**: Plugin installed via Claude Code marketplace or `npx uipro-cli install`
+- **Source**: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill (https://www.uupm.cc/)
+- **Releases**: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/releases
+- **Install**: `npm i -g uipro-cli` then `uipro init --ai claude`
 
 ## Coverage
 
@@ -66,6 +68,7 @@ Optionally persists to `design-system/MASTER.md` and per-page overrides. Returns
 
 **As CLI**:
 ```bash
-npx uipro-cli install
+npm i -g uipro-cli
+uipro init --ai claude
 python3 search.py "dark minimal SaaS" --design-system
 ```
