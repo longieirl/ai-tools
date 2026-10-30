@@ -10,7 +10,19 @@ Senior UI/UX engineering with metric-based rules and strict component architectu
 
 - **Type**: Claude Code skill
 - **Invocation**: `Skill(taste-skill)` — no subcommands, describe what you want built
-- **Source**: Cloned into `.claude/skills/taste-skill/`
+- **Source**: https://github.com/Leonxlnx/taste-skill (`skills/taste-skill/`)
+- **Install name**: `design-taste-frontend`
+
+## Versions
+
+Upstream has no tagged release; `main` is the source of truth.
+
+| Version | Upstream path | Install name | Status |
+|---|---|---|---|
+| v2 | `skills/taste-skill/` | `design-taste-frontend` | Current default — **experimental / pre-release**, substantial "anti-slop" rewrite |
+| v1 | `skills/taste-skill-v1/` | `design-taste-frontend-v1` | Preserved original — dial-driven baselines (the behaviour described below) |
+
+The v2 rewrite keeps the dial philosophy (`DESIGN_VARIANCE`, `MOTION_INTENSITY`, `VISUAL_DENSITY`) but makes rules contextual rather than auto-firing. The section below describes v1 behaviour.
 
 ## What It Does
 

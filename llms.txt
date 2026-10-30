@@ -35,6 +35,9 @@ Updates to `.agent/global-claude.md` propagate to all projects automatically on 
 
 - [notes/skills/impeccable.md](notes/skills/impeccable.md) — Production-grade frontend design
 - [notes/skills/taste-skill.md](notes/skills/taste-skill.md) — Metric-based UI/UX engineering
+- [notes/skills/apple-design.md](notes/skills/apple-design.md) — Apple-style fluid motion, interruptible springs, materials, accessibility
+- [notes/skills/web-interface-guidelines.md](notes/skills/web-interface-guidelines.md) — Vercel Web Interface Guidelines, UI audit rules
+- [notes/skills/vercel-agent-skills.md](notes/skills/vercel-agent-skills.md) — Vercel's official agent-skills collection (skills.sh CLI)
 - [notes/skills/update-config.md](notes/skills/update-config.md) — Configure Claude Code settings.json
 - [notes/skills/github-secure-repo.md](notes/skills/github-secure-repo.md) — GitHub repo security hardening
 - [notes/skills/semgrep.md](notes/skills/semgrep.md) — Semgrep static analysis for security
@@ -44,6 +47,7 @@ Updates to `.agent/global-claude.md` propagate to all projects automatically on 
 - [notes/mcp/context7.md](notes/mcp/context7.md) — Live library documentation
 - [notes/mcp/github.md](notes/mcp/github.md) — GitHub API via MCP
 - [notes/mcp/shadcn.md](notes/mcp/shadcn.md) — shadcn/ui component registry
+- [notes/mcp/magic-mcp.md](notes/mcp/magic-mcp.md) — 21st.dev Magic MCP, 10,000+ React/Tailwind components
 - [notes/mcp/ide-diagnostics.md](notes/mcp/ide-diagnostics.md) — TypeScript/lint errors via language server
 
 ## Notes: Tools

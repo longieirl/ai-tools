@@ -10,7 +10,7 @@ Applies security hardening to a GitHub repository. Combines branch protection, r
 
 - **Type**: Claude Code skill (namespaced: `github` plugin)
 - **Invocation**: `Skill(github:secure-repo)`
-- **Source**: GitHub plugin marketplace
+- **Source**: in-repo — [skills/github-secure-repo/SKILL.md](../../skills/github-secure-repo/SKILL.md) (own skill, maintained here)
 
 ## What It Does
 
