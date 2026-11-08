@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLAUDE.md & Skills Diagnostic Report</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e2e4ec;
+    --muted: #8b8fa8;
+    --accent: #6c8bef;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 1.3rem; font-weight: 600; color: var(--accent); margin: 40px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 24px 0 10px; color: #c8cce0; }
+  p { margin-bottom: 12px; color: var(--text); }
+  ul, ol { margin: 0 0 12px 20px; }
+  li { margin-bottom: 6px; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+  .stat .value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th { background: var(--border); padding: 10px 12px; text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(108,139,239,0.05); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-high { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tag-med { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .tag-low { background: rgba(74,222,128,0.15); color: var(--green); }
+  .tag-info { background: rgba(108,139,239,0.15); color: var(--accent); }
+  .bar-wrap { background: var(--border); border-radius: 4px; height: 8px; margin-top: 4px; }
+  .bar { height: 8px; border-radius: 4px; background: var(--accent); }
+  .bar-orange { background: var(--orange); }
+  .bar-green { background: var(--green); }
+  .section-num { color: var(--muted); font-size: 13px; margin-right: 6px; }
+  .finding { border-left: 3px solid var(--red); padding: 12px 16px; margin-bottom: 12px; background: rgba(248,113,113,0.05); border-radius: 0 6px 6px 0; }
+  .finding.warn { border-color: var(--yellow); background: rgba(251,191,36,0.05); }
+  .finding.info { border-color: var(--accent); background: rgba(108,139,239,0.05); }
+  .finding.ok { border-color: var(--green); background: rgba(74,222,128,0.05); }
+  .finding strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .finding p { margin: 0; font-size: 13px; color: var(--muted); }
+  code { background: var(--border); padding: 1px 5px; border-radius: 3px; font-size: 13px; font-family: 'SF Mono', 'Consolas', monospace; color: #a8b4e8; }
+  .confidence { font-size: 12px; color: var(--muted); }
+  .priority-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .priority-col h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 10px; }
+  .priority-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; }
+  .donut-row { display: flex; gap: 24px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+  .donut-legend { font-size: 13px; }
+  .donut-legend li { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; list-style: none; }
+  .swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 32px; }
+  .toc ol { column-count: 2; column-gap: 32px; }
+  .toc li { font-size: 13px; margin-bottom: 4px; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  @media (max-width: 700px) { .stat-row { grid-template-columns: 1fr 1fr; } .priority-matrix { grid-template-columns: 1fr; } .toc ol { column-count: 1; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>CLAUDE.md &amp; Skills Diagnostic Report</h1>
+  <p class="meta">Phase 1 — Diagnostic only &nbsp;|&nbsp; Generated: 2026-08-31 &nbsp;|&nbsp; Analysed: 161 sessions across 36 project dirs</p>
+
+  <div class="toc card">
+    <strong style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Contents</strong>
+    <ol style="margin-top:12px">
+      <li><a href="#s1">Executive Summary</a></li>
+      <li><a href="#s2">Scope &amp; Methodology</a></li>
+      <li><a href="#s3">Data Sources</a></li>
+      <li><a href="#s4">Current CLAUDE.md Assessment</a></li>
+      <li><a href="#s5">Failure-Mode Analysis</a></li>
+      <li><a href="#s6">Failure-Mode Frequency &amp; Severity</a></li>
+      <li><a href="#s7">Recurring Workflows</a></li>
+      <li><a href="#s8">Candidate Skills</a></li>
+      <li><a href="#s9">Token-Efficiency Analysis</a></li>
+      <li><a href="#s10">Model Selection &amp; Routing</a></li>
+      <li><a href="#s11">CLAUDE.md vs Skill vs Prompt vs Model</a></li>
+      <li><a href="#s12">Highest-Priority Improvements</a></li>
+      <li><a href="#s13">Lower-Priority / Speculative</a></li>
+      <li><a href="#s14">Evidence Limitations</a></li>
+      <li><a href="#s15">Recommended Next Phase</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. EXECUTIVE SUMMARY -->
+  <h2 id="s1"><span class="section-num">1</span> Executive Summary</h2>
+  <p>Three changes would reduce token consumption and improve response quality more than any adjustment to CLAUDE.md:</p>
+  <div class="finding">
+    <strong>No model routing — 100% Sonnet for everything</strong>
+    <p>Every session uses <code>claude-sonnet-4-6</code>, including simple git operations, lookups, and reformatting tasks that Haiku handles correctly at ~5× lower cost. Conversely, complex architecture and security analysis sessions never used Opus. This is the highest-leverage optimisation available.</p>
+  </div>
+  <div class="finding">
+    <strong>Iterative context feeding drives correction cycles</strong>
+    <p>The most common failure pattern: requirements delivered across multiple turns rather than upfront. Each correction turn costs expensive output tokens. This is primarily a prompting habit, not a CLAUDE.md problem — but a short "front-load context" rule would reinforce the right behaviour.</p>
+  </div>
+  <div class="finding warn">
+    <strong>Sessions run long without deliberate endings</strong>
+    <p>The largest conversation is 28MB / 35 turns. Multiple sessions exceed 2MB. Only 16 <code>/compact</code> mentions across 161 sessions. No evidence of handoff-document discipline. Long sessions cost more and degrade response quality.</p>
+  </div>
+  <p>The current CLAUDE.md is well-written and concise. Most rules appear followed. The biggest gaps are what it <em>doesn't</em> say: nothing about model selection, session lifecycle, or context front-loading.</p>
+
+  <!-- 2. SCOPE & METHODOLOGY -->
+  <h2 id="s2"><span class="section-num">2</span> Scope &amp; Methodology</h2>
+  <p>Staged analysis following the diagnostic prompt specification:</p>
+  <ol>
+    <li><strong>Inventory:</strong> Enumerated all 36 project dirs, 161 JSONL session files (excluding subagent files), 185MB total.</li>
+    <li><strong>Categorisation by metadata:</strong> Inferred task domains from directory names and sizes without deep-reading all files.</li>
+    <li><strong>Broad sampling:</strong> Selected 15 representative sessions across domains (large, medium, small; different project types).</li>
+    <li><strong>Deep analysis:</strong> Extracted correction messages from the 5 highest-correction sessions. Reviewed first-user-message task types across top 30 files by size.</li>
+    <li><strong>Signal assessment:</strong> Patterns flattened after ~12 sessions. No new failure modes emerged after that point.</li>
+  </ol>
+
+  <!-- 3. DATA SOURCES -->
+  <h2 id="s3"><span class="section-num">3</span> Data Sources Analysed</h2>
+  <div class="stat-row">
+    <div class="stat"><div class="value">161</div><div class="label">Sessions analysed</div></div>
+    <div class="stat"><div class="value">36</div><div class="label">Project directories</div></div>
+    <div class="stat"><div class="value">185MB</div><div class="label">Total history</div></div>
+    <div class="stat"><div class="value">15</div><div class="label">Sessions deep-read</div></div>
+  </div>
+
+  <h3>Project domains</h3>
+  <table>
+    <tr><th>Domain</th><th>Projects</th><th>Size</th><th>Primary tasks</th></tr>
+    <tr><td>Website development</td><td>Jen, jflan, joebegley, mrcotton, tinlough</td><td>~65MB</td><td>Issue triage, design, n8n automation</td></tr>
+    <tr><td>SAP/Fiori development</td><td>open-ux-tools, fiori-tools-samples, s4-fiori-tools-extensions, spaces-*</td><td>~55MB</td><td>PR review, debugging, backend dev</td></tr>
+    <tr><td>DevOps / Infrastructure</td><td>portainer-io (×2 paths)</td><td>~28MB</td><td>Security review, Docker, infra config</td></tr>
+    <tr><td>Tooling &amp; config</td><td>tools-suite, AITools, dotfiles</td><td>~34MB</td><td>PR review, prompt engineering, config</td></tr>
+    <tr><td>General / misc</td><td>Downloads, dev, root</td><td>~6MB</td><td>Various</td></tr>
+  </table>
+
+  <!-- 4. CLAUDE.MD ASSESSMENT -->
+  <h2 id="s4"><span class="section-num">4</span> Current CLAUDE.md Assessment</h2>
+  <p>The global config is loaded via <code>@RTK.md</code> and <code>@global-claude.md</code> from <code>~/.claude/CLAUDE.md</code>. Both files are concise and specific.</p>
+
+  <table>
+    <tr><th>Section</th><th>Token cost</th><th>Assessment</th><th>Verdict</th></tr>
+    <tr><td>Think Before Coding</td><td>Low</td><td>4 concrete rules. Observed in practice. Worth keeping.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Surgical Changes</td><td>Low</td><td>5 rules. Snapshot rule is specific and valuable. All worth keeping.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Git &amp; External Resources</td><td>Low</td><td>Clear. "Explicit message" trigger prevents accidental pushes. No evidence of violations.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Multi-Step Plans</td><td>Low</td><td>Useful for 3+ file changes. No evidence of being bypassed.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Act Directly</td><td>Minimal</td><td>Counterbalances the previous rule. Good.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Environment Failures</td><td>Minimal</td><td>Specific, correct, observed in tools-suite debugging.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Vocabulary</td><td>Minimal</td><td>Only 2 rules. The "proper noun to 3+ locations" rule is non-obvious and useful.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Documentation</td><td>Minimal</td><td>Context7 rule. Evidence shows it's being followed. Keep.</td><td><span class="tag tag-low">Keep</span></td></tr>
+    <tr><td>Goal-Driven Execution</td><td>Low</td><td>Good intent but hard to verify compliance from history. May be adding overhead without consistent benefit.</td><td><span class="tag tag-med">Review</span></td></tr>
+    <tr><td>Token Awareness</td><td>Minimal</td><td>Rule present but no evidence it's changing behaviour — no "lighter alternative" offers observed in history.</td><td><span class="tag tag-med">Revise or remove</span></td></tr>
+    <tr><td>RTK</td><td>Minimal</td><td>Hook-based, transparent. Zero conversation overhead.</td><td><span class="tag tag-low">Keep</span></td></tr>
+  </table>
+
+  <div class="finding info">
+    <strong>Missing: model selection guidance</strong>
+    <p>No rule about which model to use for which task type. 100% Sonnet usage confirms this gap.</p>
+  </div>
+  <div class="finding info">
+    <strong>Missing: session lifecycle guidance</strong>
+    <p>No rule about when to start a fresh session, use /clear, or create a handoff document. Long degraded sessions are the result.</p>
+  </div>
+  <div class="finding info">
+    <strong>Missing: context front-loading guidance</strong>
+    <p>No rule encouraging users to provide full context upfront. Iterative context feeding is the most common failure pattern.</p>
+  </div>
+
+  <!-- 5. FAILURE MODE ANALYSIS -->
+  <h2 id="s5"><span class="section-num">5</span> Failure-Mode Analysis</h2>
+
+  <h3>FM-1: Iterative context feeding (most impactful)</h3>
+  <div class="card">
+    <p><strong>Description:</strong> User delivers requirements across multiple turns rather than upfront. Each turn corrects or extends the previous one. Claude responds fully each time, producing expensive output for a partially-understood task.</p>
+    <p><strong>Evidence:</strong> jflan/30525791 — booking system assumption corrected 3 separate times across the session. spaces-backend/8fb2bd47 — "re-review this PR based on the knowledge updates" sent after initial review was complete. open-ux-tools/eacfc1f5 — same bash script run 7 times as investigation iterated.</p>
+    <p><strong>Root cause:</strong> Prompting habit, not a Claude failure. User thinks while typing rather than front-loading. CLAUDE.md has no rule reinforcing upfront context delivery.</p>
+    <p><strong>Addressable via:</strong> CLAUDE.md rule + prompting discipline. Not a skill candidate.</p>
+  </div>
+
+  <h3>FM-2: Wrong assumption about requirements</h3>
+  <div class="card">
+    <p><strong>Description:</strong> Claude infers a requirement not stated and builds toward it. User corrects, requiring rework.</p>
+    <p><strong>Evidence:</strong> jflan — Claude assumed a booking system was needed; user corrected "no booking system required" and had to repeat it. "Undo last changes regarding this" after incorrect Seascape Terrace changes.</p>
+    <p><strong>Root cause:</strong> Under-specified prompts. The "Think Before Coding" rule covers this but the habit of asking clarifying questions before implementing isn't consistently applied.</p>
+    <p><strong>Addressable via:</strong> Stronger "state assumptions before acting" enforcement. Already in CLAUDE.md — may need emphasis or example.</p>
+  </div>
+
+  <h3>FM-3: Output format mismatch</h3>
+  <div class="card">
+    <p><strong>Description:</strong> Output structure doesn't match what the user needed. Requires a follow-up correction turn.</p>
+    <p><strong>Evidence:</strong> spaces-backend — "make these questions more developer friendly" after PR review questions were generated. AITools — output format adjustments on prompt review.</p>
+    <p><strong>Root cause:</strong> Format not specified in the original request. "Act Directly" rule means Claude picks a format rather than asking.</p>
+    <p><strong>Addressable via:</strong> Per-request format specification (not CLAUDE.md). Some skill templates could encode expected output format.</p>
+  </div>
+
+  <h3>FM-4: Terminology / vocabulary drift</h3>
+  <div class="card">
+    <p><strong>Description:</strong> Claude uses informal or abbreviated terminology where formal names are required.</p>
+    <p><strong>Evidence:</strong> tools-suite — "ensure you use SAP Business Technology Platform instead of sap btp".</p>
+    <p><strong>Root cause:</strong> Project-specific terminology not in global CLAUDE.md. Appropriate for per-project CLAUDE.md or AGENTS.md, not global config.</p>
+    <p><strong>Addressable via:</strong> Per-project AGENTS.md. Not a global CLAUDE.md concern.</p>
+  </div>
+
+  <h3>FM-5: Skill invocation overhead / friction</h3>
+  <div class="card">
+    <p><strong>Description:</strong> Skill loading messages appear in conversation history as "corrections" (false positives in analysis), but the real pattern is skills loading correctly. No genuine skill misfire observed.</p>
+    <p><strong>Evidence:</strong> tools-suite/9a3558a6 — finishing-a-development-branch skill loaded correctly. portainer/fdd62dcd — git-guardrails skill loaded.</p>
+    <p><strong>Root cause:</strong> Not a failure mode. Skills are working as intended.</p>
+    <p><strong>Addressable via:</strong> N/A.</p>
+  </div>
+
+  <!-- 6. FREQUENCY & SEVERITY -->
+  <h2 id="s6"><span class="section-num">6</span> Failure-Mode Frequency &amp; Severity</h2>
+  <table>
+    <tr><th>Failure mode</th><th>Frequency</th><th>Sessions affected</th><th>Severity</th><th>Confidence</th></tr>
+    <tr>
+      <td>FM-1: Iterative context feeding</td>
+      <td>High</td>
+      <td>~8/15 sampled (est. ~50%)</td>
+      <td><span class="tag tag-high">High</span></td>
+      <td><span class="confidence">Medium — pattern clear but correction count imprecise</span></td>
+    </tr>
+    <tr>
+      <td>FM-2: Wrong assumption</td>
+      <td>Medium</td>
+      <td>~4/15 sampled (est. ~25%)</td>
+      <td><span class="tag tag-med">Medium</span></td>
+      <td><span class="confidence">Medium</span></td>
+    </tr>
+    <tr>
+      <td>FM-3: Output format mismatch</td>
+      <td>Medium</td>
+      <td>~4/15 sampled (est. ~25%)</td>
+      <td><span class="tag tag-med">Medium</span></td>
+      <td><span class="confidence">Medium</span></td>
+    </tr>
+    <tr>
+      <td>FM-4: Vocabulary drift</td>
+      <td>Low</td>
+      <td>1/15 sampled</td>
+      <td><span class="tag tag-low">Low</span></td>
+      <td><span class="confidence">Low — single instance</span></td>
+    </tr>
+    <tr>
+      <td>FM-5: Skill friction</td>
+      <td>None detected</td>
+      <td>0</td>
+      <td><span class="tag tag-low">None</span></td>
+      <td><span class="confidence">High</span></td>
+    </tr>
+  </table>
+
+  <!-- 7. RECURRING WORKFLOWS -->
+  <h2 id="s7"><span class="section-num">7</span> Recurring Workflows</h2>
+  <table>
+    <tr><th>Workflow</th><th>Frequency</th><th>Projects</th><th>Pattern</th></tr>
+    <tr>
+      <td>PR review</td>
+      <td>Very high (~20% of sessions)</td>
+      <td>tools-suite, spaces-backend, open-ux-tools, portainer, jflan</td>
+      <td>Fetch PR, read context docs, post structured review</td>
+    </tr>
+    <tr>
+      <td>GitHub issue triage</td>
+      <td>High (~15% of sessions)</td>
+      <td>Jen, jflan, portainer</td>
+      <td>List open issues, match to existing work, propose actions</td>
+    </tr>
+    <tr>
+      <td>Git: switch branch + pull</td>
+      <td>High (appears in most projects)</td>
+      <td>portainer, spaces, s4-fiori, Jen</td>
+      <td>"switch to main, pull latest" — near-identical across projects</td>
+    </tr>
+    <tr>
+      <td>Security / architecture review</td>
+      <td>Medium (~10% of sessions)</td>
+      <td>portainer (×2)</td>
+      <td>Comprehensive infra audit with structured prompts; long sessions (3–10MB)</td>
+    </tr>
+    <tr>
+      <td>Research + synthesise</td>
+      <td>Medium (~10% of sessions)</td>
+      <td>open-ux-tools, joebegley, spaces-backend</td>
+      <td>Investigate technical issue, verify, propose fix</td>
+    </tr>
+    <tr>
+      <td>Website feature development</td>
+      <td>Medium</td>
+      <td>Jen, jflan, joebegley</td>
+      <td>Implement features, review issues, iterate on design</td>
+    </tr>
+    <tr>
+      <td>Prompt / config engineering</td>
+      <td>Low (~3–4 sessions)</td>
+      <td>AITools, dotfiles</td>
+      <td>Review, refine, and save prompts/CLAUDE.md content</td>
+    </tr>
+  </table>
+
+  <!-- 8. CANDIDATE SKILLS -->
+  <h2 id="s8"><span class="section-num">8</span> Candidate Skills</h2>
+
+  <table>
+    <tr><th>Skill</th><th>Problem it solves</th><th>Evidence</th><th>Frequency</th><th>Worth creating?</th></tr>
+    <tr>
+      <td><strong>PR Review</strong></td>
+      <td>Encodes consistent review format (one-line findings, severity tags, no praise). Currently each session re-specifies format.</td>
+      <td>5+ sessions with PR review as primary task. Format corrections observed.</td>
+      <td>~20% of sessions</td>
+      <td><span class="tag tag-high">Yes — high value</span></td>
+    </tr>
+    <tr>
+      <td><strong>Issue Triage</strong></td>
+      <td>Standardises how open issues are reviewed, matched to existing work, and categorised. Currently re-explained each session.</td>
+      <td>Jen, jflan, portainer sessions. Similar structure each time.</td>
+      <td>~15% of sessions</td>
+      <td><span class="tag tag-med">Probably — medium value</span></td>
+    </tr>
+    <tr>
+      <td><strong>Branch Setup</strong></td>
+      <td>Encodes "switch to X branch, pull latest, run tests" — appears identically across 5+ projects.</td>
+      <td>"switch to main, pull latest" in portainer, spaces, s4-fiori, Jen.</td>
+      <td>High but simple</td>
+      <td><span class="tag tag-low">Marginal — a CLAUDE.md rule or alias may be cheaper</span></td>
+    </tr>
+    <tr>
+      <td><strong>Research + Verify</strong></td>
+      <td>Structures technical investigation: confirm root cause, verify evidence, propose fix, state confidence level.</td>
+      <td>open-ux-tools debugging sessions. Context fed iteratively — a structured skill could front-load requirements.</td>
+      <td>~10% of sessions</td>
+      <td><span class="tag tag-med">Maybe — depends on skill token cost vs. saving</span></td>
+    </tr>
+    <tr>
+      <td><strong>Security Review</strong></td>
+      <td>Already observed as a structured prompt being passed in the portainer sessions. Could be formalised as a skill.</td>
+      <td>Two large portainer sessions use near-identical structured role + audit prompts.</td>
+      <td>Low (2 sessions)</td>
+      <td><span class="tag tag-low">Low — infrequent; formalise only if pattern grows</span></td>
+    </tr>
+  </table>
+
+  <div class="finding ok">
+    <strong>Existing skills are working</strong>
+    <p>finishing-a-development-branch, git-guardrails, and others are being invoked and loading correctly. No skills should be removed based on this sample.</p>
+  </div>
+
+  <!-- 9. TOKEN EFFICIENCY -->
+  <h2 id="s9"><span class="section-num">9</span> Token-Efficiency Analysis</h2>
+
+  <h3>Cost structure (measured data)</h3>
+  <div class="stat-row">
+    <div class="stat"><div class="value">100%</div><div class="label">Sessions on Sonnet</div></div>
+    <div class="stat"><div class="value">28MB</div><div class="label">Largest single session</div></div>
+    <div class="stat"><div class="value">16</div><div class="label">/compact mentions (161 sessions)</div></div>
+    <div class="stat"><div class="value">0</div><div class="label">Haiku or Opus sessions</div></div>
+  </div>
+
+  <h3>Identified inefficiencies</h3>
+
+  <div class="finding">
+    <strong>No model routing — highest impact item</strong>
+    <p>Every session uses <code>claude-sonnet-4-6</code>. Tasks like "switch to main, pull latest", simple lookups, reformatting, and issue listing could run on Haiku at ~5× lower cost with no quality loss. Complex architecture/security sessions never used Opus despite clear benefit. Estimated waste: significant — qualitative assessment only, no token counts in history.</p>
+  </div>
+
+  <div class="finding">
+    <strong>Iterative context feeding — second highest impact</strong>
+    <p>Each correction turn produces a full Sonnet response for a partially-understood task. The jflan booking system correction alone triggered 3 full response cycles. Across ~50% of sessions, this pattern adds at least 1–2 unnecessary output cycles per session.</p>
+  </div>
+
+  <div class="finding">
+    <strong>Long sessions without deliberate endings</strong>
+    <p>Only 16 <code>/compact</code> uses across 161 sessions (10%). The 28MB Jen session (35 turns) and multiple 3–5MB sessions suggest sessions running to degradation. Long sessions accumulate cached context cost and eventually degrade response quality. No evidence of handoff-document discipline.</p>
+  </div>
+
+  <div class="finding warn">
+    <strong>Token Awareness rule not producing observable behaviour change</strong>
+    <p>The existing "Token Awareness" CLAUDE.md rule says to offer a lighter alternative before large operations. No evidence of this happening in any sampled session — no "this will consume significant tokens, want a lighter approach?" messages observed. The rule is either being skipped or not triggering. Low ROI rule.</p>
+  </div>
+
+  <div class="finding info">
+    <strong>RTK hook is working correctly</strong>
+    <p>RTK is installed and active. Shell command token savings are being realised transparently. No issues here.</p>
+  </div>
+
+  <div class="finding ok">
+    <strong>CLAUDE.md token cost is low</strong>
+    <p>The global config (~74 lines across 2 files) loads on every turn. This is an appropriate size. No sections are verbose enough to warrant removal purely for token cost.</p>
+  </div>
+
+  <!-- 10. MODEL SELECTION -->
+  <h2 id="s10"><span class="section-num">10</span> Model Selection &amp; Task-to-Model Routing</h2>
+
+  <h3>Inventory</h3>
+  <p>13,465 assistant turns using <code>claude-sonnet-4-6</code>. 13 turns using <code>&lt;synthetic&gt;</code> (internal subagent label). Zero Haiku. Zero Opus. Model has not changed over time — the full history shows the same pattern throughout.</p>
+
+  <h3>Observed vs recommended routing</h3>
+  <table>
+    <tr><th>Task category</th><th>Model used</th><th>Recommended tier</th><th>Gap</th><th>Confidence</th></tr>
+    <tr>
+      <td>Simple git ops (branch switch, pull)</td>
+      <td>Sonnet</td>
+      <td>Haiku</td>
+      <td><span class="tag tag-high">Over-provisioned</span></td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td>Issue listing / simple lookup</td>
+      <td>Sonnet</td>
+      <td>Haiku</td>
+      <td><span class="tag tag-high">Over-provisioned</span></td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td>Output reformatting / summarising</td>
+      <td>Sonnet</td>
+      <td>Haiku</td>
+      <td><span class="tag tag-high">Over-provisioned</span></td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td>PR review (standard)</td>
+      <td>Sonnet</td>
+      <td>Sonnet</td>
+      <td><span class="tag tag-low">Correct</span></td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td>Debugging / technical research</td>
+      <td>Sonnet</td>
+      <td>Sonnet / Opus</td>
+      <td><span class="tag tag-med">Potentially under for novel problems</span></td>
+      <td>Medium</td>
+    </tr>
+    <tr>
+      <td>Architecture / security review</td>
+      <td>Sonnet</td>
+      <td>Top tier (Opus/Fable)</td>
+      <td><span class="tag tag-high">Under-provisioned for quality</span></td>
+      <td>Medium</td>
+    </tr>
+    <tr>
+      <td>Code implementation (known patterns)</td>
+      <td>Sonnet</td>
+      <td>Sonnet</td>
+      <td><span class="tag tag-low">Correct</span></td>
+      <td>High</td>
+    </tr>
+    <tr>
+      <td>Prompt engineering / config review</td>
+      <td>Sonnet</td>
+      <td>Sonnet</td>
+      <td><span class="tag tag-low">Correct</span></td>
+      <td>Medium</td>
+    </tr>
+  </table>
+
+  <h3>Routing mechanism recommendation</h3>
+  <p>Given current workflow patterns, the best path forward is <strong>per-session model selection</strong> — start each session with the model appropriate to the session's dominant task. This requires no tooling changes, avoids cache-busting mid-session, and is easy to adopt incrementally.</p>
+  <p>For the PR Review skill candidate: encode a preferred model in frontmatter (<code>model: sonnet</code>) so it never accidentally runs on a heavier model.</p>
+
+  <!-- 11. CLASSIFICATION -->
+  <h2 id="s11"><span class="section-num">11</span> CLAUDE.md vs Skill vs Prompt vs Model</h2>
+  <table>
+    <tr><th>Item</th><th>Belongs in</th><th>Why</th></tr>
+    <tr><td>Model selection guidance</td><td>CLAUDE.md (new)</td><td>Applies to every session start. Short rule, high value.</td></tr>
+    <tr><td>Session lifecycle / handoff discipline</td><td>CLAUDE.md (new)</td><td>Universal across all projects. Not task-specific.</td></tr>
+    <tr><td>Context front-loading reminder</td><td>CLAUDE.md (new, short)</td><td>Addresses FM-1 systematically.</td></tr>
+    <tr><td>PR review format + structure</td><td>Skill</td><td>Distinct workflow. Repeated across 5+ project domains. Output format varies without it.</td></tr>
+    <tr><td>Issue triage structure</td><td>Skill</td><td>Repeated. Context re-explained each time. Skill saves 200–400 tokens per invocation.</td></tr>
+    <tr><td>SAP terminology ("SAP BTP" → full name)</td><td>Per-project AGENTS.md</td><td>Project-specific. Not relevant to all sessions. Global rule would be noise.</td></tr>
+    <tr><td>Security review template (portainer)</td><td>Per-project file or skill</td><td>Too specific. Only 2 sessions. Formalise only if pattern grows.</td></tr>
+    <tr><td>Token Awareness rule</td><td>Remove or rewrite</td><td>Not producing observable behaviour change. Replace with concrete model selection rule.</td></tr>
+    <tr><td>Goal-Driven Execution</td><td>Review</td><td>Hard to verify compliance. May be adding overhead on every response without measurable benefit. Consider shortening.</td></tr>
+  </table>
+
+  <!-- 12. HIGHEST PRIORITY -->
+  <h2 id="s12"><span class="section-num">12</span> Highest-Priority Improvements</h2>
+
+  <div class="finding">
+    <strong>P1: Add model selection rule to CLAUDE.md</strong>
+    <p>A short rule (3–5 lines) stating: use Haiku for simple tasks (git ops, lookups, reformatting), Sonnet for standard implementation/review, top tier for architecture/novel problems. Adopt per-session model selection as the primary mechanism. This is the single highest-ROI change available.</p>
+  </div>
+
+  <div class="finding">
+    <strong>P2: Add session lifecycle rule to CLAUDE.md</strong>
+    <p>A short rule: start a fresh session for a new task; if context exceeds 50+ turns, write a handoff doc and /clear. This directly addresses the long-session degradation pattern.</p>
+  </div>
+
+  <div class="finding">
+    <strong>P3: Create a PR Review skill</strong>
+    <p>Encode consistent review format (one-line per finding, severity-tagged, no praise, format: <code>path:line: &lt;severity&gt;: &lt;problem&gt;. &lt;fix&gt;.</code>). Skill declares <code>model: sonnet</code>. Evidence: 5+ sessions, format corrections observed. Expected saving: 200–500 tokens per session plus rework cycles avoided.</p>
+  </div>
+
+  <div class="finding warn">
+    <strong>P4: Replace Token Awareness rule with concrete front-loading rule</strong>
+    <p>Remove the existing Token Awareness rule (not working). Replace with: "Before starting a task, state what information would reduce back-and-forth. If a requirement is ambiguous, ask one clarifying question rather than assuming." This directly addresses FM-1 and FM-2.</p>
+  </div>
+
+  <!-- 13. LOWER PRIORITY -->
+  <h2 id="s13"><span class="section-num">13</span> Lower-Priority / Speculative Improvements</h2>
+
+  <ul>
+    <li><strong>Issue Triage skill</strong> — worth creating once PR Review skill is validated. Similar pattern, medium frequency.</li>
+    <li><strong>Shorten Goal-Driven Execution rule</strong> — the test-first framing is good but the multi-step plan template adds overhead for simple tasks. Candidate for trimming.</li>
+    <li><strong>Review skills at next model release</strong> — existing skills (finishing-a-development-branch, git-guardrails, superpowers) were written for earlier model generations. Some instructions may now be default behaviour.</li>
+    <li><strong>Branch Setup alias or skill</strong> — "switch to X, pull latest" is very common but very simple. A shell alias or 5-line CLAUDE.md shorthand may be cheaper than a full skill.</li>
+    <li><strong>Research + Verify skill</strong> — could address FM-1 in debugging sessions by front-loading investigation structure. Low confidence — investigate further before building.</li>
+  </ul>
+
+  <!-- 14. EVIDENCE LIMITATIONS -->
+  <h2 id="s14"><span class="section-num">14</span> Evidence Limitations</h2>
+
+  <ul>
+    <li><strong>Correction detection is approximate.</strong> The correction signal used keyword matching on user messages. Some false positives (shell output containing "no") were manually filtered. The true correction rate per session is qualitative, not measured.</li>
+    <li><strong>Token counts not available.</strong> JSONL history does not include token consumption per turn. All cost estimates are qualitative. Statements like "~5× cost difference" are based on known Haiku/Sonnet pricing, not measured session data.</li>
+    <li><strong>15 of 161 sessions deep-read.</strong> ~90% of sessions were characterised from metadata only (directory name, file size, first user message). Failure modes in sessions outside the sample are unknown.</li>
+    <li><strong>No timestamp data used.</strong> It's not clear whether model usage or behaviour has changed over time. The full history may contain older sessions with different patterns.</li>
+    <li><strong>Effort levels not visible.</strong> The JSONL history does not expose the effort level used per session. Whether sessions were running at default, high, or max effort is unknown.</li>
+    <li><strong>Subagent sessions excluded.</strong> Files in <code>subagents/</code> subdirectories were excluded. These may contain additional patterns.</li>
+  </ul>
+
+  <!-- 15. NEXT PHASE -->
+  <h2 id="s15"><span class="section-num">15</span> Recommended Next Phase</h2>
+
+  <p>Phase 2 priorities in order:</p>
+  <ol>
+    <li><strong>Draft the new model selection rule</strong> for CLAUDE.md (3–5 lines). Validate against 5 sampled sessions — would it have prompted better model choice?</li>
+    <li><strong>Draft the session lifecycle rule</strong> (3–5 lines). Same validation.</li>
+    <li><strong>Draft the PR Review skill.</strong> Test against the tools-suite and spaces-backend PR review sessions. Compare output format consistency.</li>
+    <li><strong>Remove or rewrite the Token Awareness rule.</strong> Replace with the front-loading clarification rule.</li>
+    <li><strong>Leave everything else unchanged</strong> until Phase 5 regression testing confirms the above four changes improve the targeted sessions without introducing new problems.</li>
+  </ol>
+
+  <div class="card" style="margin-top:32px; border-color: var(--accent);">
+    <p style="color:var(--muted);font-size:13px;margin:0"><strong style="color:var(--text)">Do not create replacement CLAUDE.md or skills yet.</strong> End state of Phase 1: this report. Phase 2 designs the changes. Phase 3 writes them. Phase 5 regression-tests them before adoption.</p>
+  </div>
+
+</div>
+</body>
+</html>

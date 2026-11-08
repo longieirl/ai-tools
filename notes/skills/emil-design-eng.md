@@ -10,7 +10,9 @@ Design engineering philosophy for code review and implementation guidance. Respo
 
 - **Type**: Claude Code skill
 - **Invocation**: `Skill(emil-design-eng)` — ask a question or paste code to review
-- **Source**: Cloned into `.claude/skills/emil-design-eng/`
+- **Source**: https://github.com/emilkowalski/skills (`skills/emil-design-eng/`)
+- **Install**: `npx skills@latest add emilkowalski/skills`
+- **Releases**: none published — track `main`
 
 ## What It Does
 
