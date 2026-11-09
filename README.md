@@ -121,6 +121,7 @@ If you copy-paste a skill's `.md` file directly into your project, you own that 
 | [lighthouse](notes/tools/lighthouse.md) | Automated auditing — performance, accessibility, SEO, best practices |
 | [gitleaks](notes/tools/gitleaks.md) | Secret scanning — detects hardcoded credentials in git history and working tree |
 | [OpenSpec](https://openspec.dev/) | Spec-driven feature planning — generates proposal docs, design decisions, and tasks that persist alongside code across sessions and agents |
+| [Nx AI integration](https://nx.dev/docs/getting-started/ai-setup) | Wire AI agents (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode`) into an Nx workspace — `npx nx configure-ai-agents --agents <agents> --no-interactive` writes agent rules (`AGENTS.md`, `CLAUDE.md`), Nx MCP server config, and Nx agent skills; verify with `--check=all` |
 
 ### Videos
 
